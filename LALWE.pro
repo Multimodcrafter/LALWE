@@ -14,10 +14,12 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    assembler.cpp
+    assembler.cpp \
+    ram.cpp
 
 HEADERS  += mainwindow.h \
-    assembler.h
+    assembler.h \
+    ram.h
 
 FORMS    += mainwindow.ui
 

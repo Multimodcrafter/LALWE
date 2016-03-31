@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 
-const std::map<std::string,const unsigned long int> Assembler::OP_Codes = {
+const std::map<std::string,const sint> Assembler::OP_Codes = {
     {"nop",0x00},
     {"mov",0x10},
     {"hlt",0x20},
@@ -12,14 +12,23 @@ const std::map<std::string,const unsigned long int> Assembler::OP_Codes = {
     {"ret",0x40}
 };
 
+const std::map<sint,const std::string> Assembler::mnemonics = {
+    {0x00,"nop"},
+    {0x10,"mov"},
+    {0x20,"hlt"},
+    {0x30,"call"},
+    {0x40,"ret"}
+};
+
+
 Assembler::Assembler() {
 
 }
 
-void Assembler::assemble(std::string code) {
+void Assembler::assemble(std::string code, RAM& mem) {
 
 }
 
-std::string Assembler::disassemble() {
+std::string Assembler::disassemble(RAM& mem) {
 
 }
