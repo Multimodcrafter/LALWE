@@ -15,11 +15,13 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     assembler.cpp \
-    ram.cpp
+    ram.cpp \
+    logger.cpp
 
 HEADERS  += mainwindow.h \
     assembler.h \
-    ram.h
+    ram.h \
+    logger.h
 
 FORMS    += mainwindow.ui
 

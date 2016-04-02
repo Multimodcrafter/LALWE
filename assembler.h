@@ -1,10 +1,12 @@
 #ifndef ASSEMBLER_H
 #define ASSEMBLER_H
-#define sint long int
+#include "stdint.h"
+#define sint int32_t
 
 #include <map>
 #include <string>
 #include "ram.h"
+#include <vector>
 
 class Assembler
 {
@@ -25,6 +27,7 @@ private:
     /**While assembling, this holds the adresses belonging to each variable name and jumplable*/
     std::map<std::string,sint> varbel_names;
 
+    /**Object for subroutine data*/
     struct subroutine{
         sint param_count;
         sint address;
@@ -34,6 +37,8 @@ private:
 
     /**While assembling, this stores all the information about subroutine calls (adress and parameter count)*/
     std::map<std::string,subroutine> subroutines;
+
+    std::vector<std::string> splitString(std::string,char);
 };
 
 #endif // ASSEMBLER_H

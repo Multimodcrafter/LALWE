@@ -1,7 +1,8 @@
-#define sint long int
+#include "stdint.h"
+#define sint int32_t
 #include "ram.h"
 
-RAM::RAM() : memory(new sint [1 << 30])
+RAM::RAM() : memory(new sint [(1 << 27)])
 {
 
 }
