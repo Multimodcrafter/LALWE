@@ -9,6 +9,6 @@ int main(int argc, char *argv[])
     w.show();
     Assembler assembler;
     RAM ram;
-    assembler.assemble("Line One\nLine Two\nLine Three",ram);
+    assembler.assemble("Line One\nfunction tEs_t8 hello\nLine Three",ram);
     return a.exec();
 }
