@@ -16,12 +16,14 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     assembler.cpp \
     ram.cpp \
-    logger.cpp
+    logger.cpp \
+    constants.cpp
 
 HEADERS  += mainwindow.h \
     assembler.h \
     ram.h \
-    logger.h
+    logger.h \
+    constants.h
 
 FORMS    += mainwindow.ui
 

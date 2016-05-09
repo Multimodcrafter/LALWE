@@ -13,23 +13,16 @@ class Assembler
 public:
     Assembler();
 
-    /**Assembles the code into the RAM*/
+    /** Assembles the code into the RAM*/
     void assemble(std::string, RAM&);
-    /**Disassembles the RAM and returns the code*/
+    /** Disassembles the RAM and returns the code*/
     std::string disassemble(RAM&);
 
 private:
-    /**Stores the OP-Codes' hexvalues needed to assemble the program into the RAM*/
-    static const std::map<std::string,const sint> OP_Codes;
-    /**Stores the numeric values used to identify the processor registers*/
-    static const std::map<std::string,const sint> reg_names;
-    /**Stores the hexvalues' coresponding mnemonics for disassembly*/
-    static const std::map<sint, const std::string> mnemonics;
-
-    /**While assembling, this holds the adresses belonging to each variable name and jumplable*/
+    /** While assembling, this holds the adresses belonging to each variable name and jumplable*/
     std::map<std::string,sint> varbel_names;
 
-    /**Object for subroutine data*/
+    /** Object for subroutine data*/
     struct subroutine{
         sint param_count;
         sint address;
@@ -41,14 +34,26 @@ private:
         subroutine() {}
     };
 
-    /**While assembling, this stores all the information about subroutine calls (adress and parameter count)*/
+    /** While assembling, this stores all the information about subroutine calls (adress and parameter count)*/
     std::map<std::string,subroutine> subroutines;
 
-    /**Splits a string into a vector at all delimiter-character occurences*/
+    /** Splits a string into a vector at all delimiter-character occurences*/
     std::vector<std::string> splitString(std::string,char);
 
-    /**checks if a label-, variable- or subroutinename is valid*/
+    /** Checks if a label-, variable- or subroutinename is valid*/
     bool checkIdentifier(std::string);
+
+    /** Stores an address and if its local, global, a parameter or a register*/
+    struct addressCompound{
+        sint address;
+        int op_add;
+        bool valid;
+
+        addressCompound() {}
+    };
+
+    /** Returns the adress mapped to an identifier, based on the curent state of the assembler (global or inside a function)*/
+    addressCompound getAdress(std::string, int, std::string);
 };
 
 #endif // ASSEMBLER_H
