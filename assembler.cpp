@@ -23,7 +23,7 @@ void Assembler::assemble(std::string code, RAM& mem) {
         std::vector<std::string> words = splitString(e,' ');
 
         //increase addresspointer apropriately
-        if(words.size() > 0 && words.at(0) == "call") address += words.size() * 2 - 2; //function call requires two + 2 times #parameters memory slots
+        if(words.size() > 0 && words.at(0) == "call") address += words.size() * 2 - 1; //function call requires two (OP_Code + Argument) + 2 times #parameters + one (function address) memory slots
         else if(words.size() > 0
                 && Constants::ASSEMBLY_INST.find(words.at(0)) == Constants::ASSEMBLY_INST.end()) address += 2; //normal op code requires two memory slots (OP-Code + Argument)
 
@@ -51,7 +51,7 @@ void Assembler::assemble(std::string code, RAM& mem) {
         }
 
         if(paramcount > -1) { //curent line was a function def
-            s.address = address;
+            s.address = address + 2;
             s.param_count = paramcount;
             subroutines.insert(std::make_pair(name,s)); //store all the information about the subroutine for later use
             Logger::debug("Subroutine stored!");
@@ -104,29 +104,39 @@ void Assembler::assemble(std::string code, RAM& mem) {
                 } else break;
             } else {
                 if(words.size() == 1) {
-                    //if mnemonic has no arguments, store the apropriate op-code
+                    //if mnemonic has no arguments, store the apropriate op-code and a null argument
                     mem.setValueAt(address + 1, Constants::OP_CODES.at(words.at(0)));
-                }else if(words.size() == 2) {
-                    //mnemonic with one argument
-
-                } else if(words.size() == 3) {
-                    //mnemonic with two arguments
-                    mem.setValueAt(address + 1,Constants::OP_CODES.at(words.at(0)));
-                } else {
+                    mem.setValueAt(address + 2, 0x0);
+                } else if(words.at(0) == "call") {
                     //mnemonic with more than two arguments (currently only possible when calling a function)
                     mem.setValueAt(address + 1, Constants::OP_CODES.at(words.at(0))); //store opcode for calling a function
                     mem.setValueAt(address + 2, subroutines.at(words.at(1)).param_count); //store amount of parameters
-                    for(int i = 0; i < subroutines.at(words.at(0)).param_count * 2; i += 2) { //store all the parameters
+                    for(int i = 0; i < subroutines.at(words.at(1)).param_count * 2; i += 2) { //store all the parameters
                         addressCompound adcp = getAdress(words.at(2+i),state, curr_s_name);
                         mem.setValueAt(address + 3 + i, adcp.op_add); //store type of address
                         mem.setValueAt(address + 4 + i, adcp.address); //store the address maped to the identifier
                     }
+                    mem.setValueAt(address + subroutines.at(words.at(1)).param_count * 2 + 3, subroutines.at(words.at(1)).address);
+                } else if(words.size() == 2) {
+                    //mnemonic with one argument
+                    addressCompound adcp = getAdress(words.at(1), state, curr_s_name);
+                    mem.setValueAt(address + 1, Constants::OP_CODES.at(words.at(0)) + adcp.op_add);
+                    mem.setValueAt(address + 2, adcp.address);
+                } else if(words.size() == 3) {
+                    //mnemonic with two arguments (currently MOV is the only instruction with exactly two arguments, therefore the arg vals can just be added together)
+                    mem.setValueAt(address + 1,Constants::OP_CODES.at(words.at(0)));
+                    addressCompound adcp1 = getAdress(words.at(1), state, curr_s_name);
+                    addressCompound adcp2 = getAdress(words.at(2), state, curr_s_name);
+                    mem.setValueAt(address + 2, adcp1.address + adcp2.address);
+                } else {
+                    //something weird happened
+                    Logger::error("Syntax error!");
                 }
             }
         }
 
         //increase addresspointer apropriately
-        if(words.size() > 0 && words.at(0) == "call") address += words.size() * 2 - 2; //function call requires two + 2 times #parameters memory slots
+        if(words.size() > 0 && words.at(0) == "call") address += words.size() * 2 - 1; //function call requires two (OP_Code + Argument) + 2 times #parameters + one (function address) memory slots
         else if(words.size() > 0
                 && Constants::ASSEMBLY_INST.find(words.at(0)) == Constants::ASSEMBLY_INST.end()) address += 2; //normal op code requires two memory slots (OP-Code + Argument)
     }
@@ -163,7 +173,9 @@ bool Assembler::checkIdentifier(std::string identifier) {
 }
 
 Assembler::addressCompound Assembler::getAdress(std::string idf, int state, std::string sub) {
+    Logger::debug("Processing identifier: " + idf);
     addressCompound result;
+    result.valid = false;
     if(std::regex_match(idf,std::regex("^[0-9]"))) {
         //if identifier is a number, it serves as the effective address/value
         std::stringstream ss(idf);
@@ -200,5 +212,6 @@ Assembler::addressCompound Assembler::getAdress(std::string idf, int state, std:
             Logger::error("Undefined Identifier!"); //identifier has not been defined (yet)!
         }
     }
+    Logger::debug("Found address: ", result.address);
     return result;
 }

@@ -9,6 +9,7 @@ int main(int argc, char *argv[])
     w.show();
     Assembler assembler;
     RAM ram;
-    assembler.assemble("Line One\nfunction tEs_t8 hello\nLine Three",ram);
+    assembler.assemble("define varA\ndefine varB\nhlt varB\nfunction test par1\nhlt par1\ndefine someVar\nhlt someVar\nendfunction\nentrypoint\ncall test 0",ram);
+    ram.debugRam();
     return a.exec();
 }

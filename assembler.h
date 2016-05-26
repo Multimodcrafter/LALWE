@@ -45,9 +45,9 @@ private:
 
     /** Stores an address and if its local, global, a parameter or a register*/
     struct addressCompound{
-        sint address;
-        int op_add;
-        bool valid;
+        sint address = 0;
+        int op_add = 0;
+        bool valid = false;
 
         addressCompound() {}
     };

@@ -13,6 +13,12 @@ void Logger::debug(std::string message) {
     }
 }
 
+void Logger::debug(std::string message, sint value) {
+    if(Logger::loglevel == 0) {
+        std::cout << "Debug: " << message << value << std::endl;
+    }
+}
+
 void Logger::warning(std::string message) {
     if(Logger::loglevel <= 1) {
         std::cout << "Warning: " << message << std::endl;
