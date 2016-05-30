@@ -17,13 +17,21 @@ SOURCES += main.cpp\
     assembler.cpp \
     ram.cpp \
     logger.cpp \
-    constants.cpp
+    constants.cpp \
+    processor.cpp \
+    controller.cpp \
+    register.cpp \
+    alu.cpp
 
 HEADERS  += mainwindow.h \
     assembler.h \
     ram.h \
     logger.h \
-    constants.h
+    constants.h \
+    processor.h \
+    controller.h \
+    register.h \
+    alu.h
 
 FORMS    += mainwindow.ui
 

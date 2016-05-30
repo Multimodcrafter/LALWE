@@ -20,10 +20,11 @@ const std::map<std::string,const sint> Constants::REG_NAMES = {
     {"arg",1 << 2},
     {"id1",1 << 3},
     {"id2",1 << 4},
-    {"fla",1 << 5},
-    {"stp",1 << 6},
-    {"frp",1 << 7},
-    {"dap",1 << 8}
+    {"in",1 << 5},
+    {"fla",1 << 6},
+    {"stp",1 << 7},
+    {"frp",1 << 8},
+    {"dap",1 << 9}
 };
 
 const std::set<std::string> Constants::ASSEMBLY_INST = {
