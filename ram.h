@@ -15,6 +15,9 @@ public:
     /** stores the given value inside the RAM at the specified location*/
     void setValueAt(sint, sint);
 
+    /** returns the address range*/
+    sint getMaxAddress();
+
     /** prints out a certain range of the RAM for deugging purposes*/
     void debugRam();
 

@@ -15,7 +15,7 @@ Assembler::Assembler() {
 
 void Assembler::assemble(std::string code, RAM& mem) {
     std::vector<std::string> lines = splitString(code,'\n');
-    sint address = -1;
+    sint address = 0;
 
     //first iteration to get all the information about all subroutines
     for(std::string e : lines) {
@@ -64,8 +64,10 @@ void Assembler::assemble(std::string code, RAM& mem) {
     subroutine* curr_s = nullptr; //stores the current subroutine information
     std::string curr_s_name = "";
     int globalvarcount = 0; //how many global vars have been defined so far
-    int localvarcount = 0; // how many local vars have been defined so far (in case of state == 1)
-    address = 0; //reset the address counter;
+    // how many local vars have been defined so far (in case of state == 1)
+    // start value of 2 is necessary because 0=return-address, 1=previous frame pointer and 2=previous stack pointer
+    int localvarcount = 2;
+    address = 1; //reset the address counter;
     mem.setValueAt(0,0x1); //set the default entrypoint to one in case it hasn't been set in the code
 
     for(std::string e : lines) {
@@ -79,13 +81,13 @@ void Assembler::assemble(std::string code, RAM& mem) {
                     } else break;
                 } else {
                     if(checkIdentifier(words.at(1))) {
-                        ++localvarcount; //local vars are one basedly indexed since the frame pointer points to the return address
+                        ++localvarcount; //local vars are three basedly indexed since the frame pointer points to the return address and the previous frame and stack pointer value folow
                         curr_s->local_var_names.insert(std::make_pair(words.at(1),localvarcount));
                     } else break;
                 }
             } else if(words.at(0) == "endfunction") {
                 //reset everything to state 0
-                localvarcount = 0;
+                localvarcount = 2;
                 curr_s = nullptr;
                 curr_s_name = "";
                 state = 0;
@@ -123,11 +125,11 @@ void Assembler::assemble(std::string code, RAM& mem) {
                     mem.setValueAt(address + 1, Constants::OP_CODES.at(words.at(0)) + adcp.op_add);
                     mem.setValueAt(address + 2, adcp.address);
                 } else if(words.size() == 3) {
-                    //mnemonic with two arguments (currently MOV is the only instruction with exactly two arguments, therefore the arg vals can just be added together)
+                    //mnemonic with two arguments (currently MOV is the only instruction with exactly two arguments, therefore the arg vals can just be added together with a shift of eleven)
                     mem.setValueAt(address + 1,Constants::OP_CODES.at(words.at(0)));
                     addressCompound adcp1 = getAdress(words.at(1), state, curr_s_name);
                     addressCompound adcp2 = getAdress(words.at(2), state, curr_s_name);
-                    mem.setValueAt(address + 2, adcp1.address + adcp2.address);
+                    mem.setValueAt(address + 2, adcp1.address + (adcp2.address << 11));
                 } else {
                     //something weird happened
                     Logger::error("Syntax error!");
@@ -140,10 +142,11 @@ void Assembler::assemble(std::string code, RAM& mem) {
         else if(words.size() > 0
                 && Constants::ASSEMBLY_INST.find(words.at(0)) == Constants::ASSEMBLY_INST.end()) address += 2; //normal op code requires two memory slots (OP-Code + Argument)
     }
+    mem.setValueAt(1,address); //set the value the datapointer should be set to
 }
 
 std::string Assembler::disassemble(RAM& mem) {
-
+    return "";
 }
 
 std::vector<std::string> Assembler::splitString(std::string str, char delimiter) {

@@ -17,6 +17,10 @@ void RAM::setValueAt(sint addr, sint value) {
     memory[addr] = value;
 }
 
+sint RAM::getMaxAddress() {
+    return sizeof(memory) / sizeof(sint) - 1;
+}
+
 void RAM::debugRam() {
     std::string result = "RAM contents:";
     for(int i = 0; i < 15; ++i) {

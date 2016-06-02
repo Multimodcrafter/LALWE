@@ -24,17 +24,17 @@ public:
     static const int ADR_PARAMETER = 4;
 
     /** constants for easier register derefrencing*/
-    static const int REG_PC = 0;
-    static const int REG_OPC = 1;
-    static const int REG_ARG = 2;
-    static const int REG_ACC = 3;
-    static const int REG_FLA = 4;
-    static const int REG_IND1 = 5;
-    static const int REG_IND2 = 6;
-    static const int REG_IN = 7;
-    static const int REG_DPT = 8;
-    static const int REG_SPT = 9;
-    static const int REG_FPT = 10;
+    static const int REG_PC = 1;
+    static const int REG_OPC = 1 << 1;
+    static const int REG_ARG = 1 << 2;
+    static const int REG_ACC = 1 << 3;
+    static const int REG_FLA = 1 << 4;
+    static const int REG_IND1 = 1 << 5;
+    static const int REG_IND2 = 1 << 6;
+    static const int REG_IN = 1 << 7;
+    static const int REG_DPT = 1 << 8;
+    static const int REG_SPT = 1 << 9;
+    static const int REG_FPT = 1 << 10;
 
     /** getter for the dissassembly*/
     static std::string getMnemonic(sint);

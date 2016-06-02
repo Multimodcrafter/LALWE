@@ -5,26 +5,33 @@
 #include "stdint.h"
 #define sint int32_t
 
+#define NOP 0x00
+#define MOV 0x10
+#define HLT 0x20
+#define CALL 0x30
+#define RET 0x40
+
+
 const std::map<std::string,const sint> Constants::OP_CODES = {
-    {"nop",0x00},
-    {"mov",0x05},
-    {"hlt",0x0A},
-    {"call",0x10},
-    {"ret",0x15}
+    {"nop",NOP},
+    {"mov",MOV},
+    {"hlt",HLT},
+    {"call",CALL},
+    {"ret",RET}
 };
 
 const std::map<std::string,const sint> Constants::REG_NAMES = {
-    {"akku",0},
-    {"pc",1},
-    {"opc",1 << 1},
-    {"arg",1 << 2},
-    {"id1",1 << 3},
-    {"id2",1 << 4},
-    {"in",1 << 5},
-    {"fla",1 << 6},
-    {"stp",1 << 7},
-    {"frp",1 << 8},
-    {"dap",1 << 9}
+    {"pc",Constants::REG_PC},
+    {"opc",Constants::REG_OPC},
+    {"arg",Constants::REG_ARG},
+    {"acc",Constants::REG_ACC},
+    {"fla",Constants::REG_FLA},
+    {"id1",Constants::REG_IND1},
+    {"id2",Constants::REG_IND2},
+    {"in",Constants::REG_IN},
+    {"dpt",Constants::REG_DPT},
+    {"spt",Constants::REG_SPT},
+    {"fpt",Constants::REG_FPT}
 };
 
 const std::set<std::string> Constants::ASSEMBLY_INST = {
