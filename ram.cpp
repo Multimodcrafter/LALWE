@@ -3,10 +3,13 @@
 #include "ram.h"
 #include "constants.h"
 #include "logger.h"
+#define arraysize (1 << 5)
 
-RAM::RAM() : memory(new sint [(1 << 27)])
+RAM::RAM() : memory(new sint [arraysize])
 {
-
+    for(int i = 0; i < arraysize; ++i) {
+        memory[i] = 0;
+    }
 }
 
 sint RAM::getValueAt(sint addr) {
@@ -18,14 +21,16 @@ void RAM::setValueAt(sint addr, sint value) {
 }
 
 sint RAM::getMaxAddress() {
-    return sizeof(memory) / sizeof(sint) - 1;
+    return (arraysize) - 1;
 }
 
 void RAM::debugRam() {
     std::string result = "RAM contents:";
-    for(int i = 0; i < 15; ++i) {
+    for(int i = 0; i < 16; ++i) {
         result += "\n";
         result += Constants::intToHex(memory[i]);
+        result += "\t";
+        result += Constants::intToHex(memory[i + 16]);
     }
     Logger::debug(result);
 }

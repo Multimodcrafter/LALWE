@@ -13,8 +13,11 @@ Assembler::Assembler() {
 
 }
 
-void Assembler::assemble(std::string code, RAM& mem) {
+void Assembler::assemble(std::string code, RAM* mem) {
     std::vector<std::string> lines = splitString(code,'\n');
+    varbel_names.clear();
+    subroutines.clear();
+
     sint address = 0;
 
     //first iteration to get all the information about all subroutines
@@ -68,7 +71,7 @@ void Assembler::assemble(std::string code, RAM& mem) {
     // start value of 2 is necessary because 0=return-address, 1=previous frame pointer and 2=previous stack pointer
     int localvarcount = 2;
     address = 1; //reset the address counter;
-    mem.setValueAt(0,0x1); //set the default entrypoint to one in case it hasn't been set in the code
+    mem->setValueAt(0,0x2); //set the default entrypoint to one in case it hasn't been set in the code
 
     for(std::string e : lines) {
         std::vector<std::string> words = splitString(e,' ');
@@ -98,7 +101,7 @@ void Assembler::assemble(std::string code, RAM& mem) {
                 curr_s_name = words.at(1);
             } else if(words.at(0) == "entrypoint") {
                 //set the entrypoint address
-                mem.setValueAt(0,address + 1);
+                mem->setValueAt(0,address + 1);
             } else if(words.at(0) == ":") {
                 //if identifier is valid, map the preceding address to it
                 if(state == 0 && checkIdentifier(words.at(1))) {
@@ -107,29 +110,29 @@ void Assembler::assemble(std::string code, RAM& mem) {
             } else {
                 if(words.size() == 1) {
                     //if mnemonic has no arguments, store the apropriate op-code and a null argument
-                    mem.setValueAt(address + 1, Constants::OP_CODES.at(words.at(0)));
-                    mem.setValueAt(address + 2, 0x0);
+                    mem->setValueAt(address + 1, Constants::OP_CODES.at(words.at(0)));
+                    mem->setValueAt(address + 2, 0x0);
                 } else if(words.at(0) == "call") {
                     //mnemonic with more than two arguments (currently only possible when calling a function)
-                    mem.setValueAt(address + 1, Constants::OP_CODES.at(words.at(0))); //store opcode for calling a function
-                    mem.setValueAt(address + 2, subroutines.at(words.at(1)).param_count); //store amount of parameters
+                    mem->setValueAt(address + 1, Constants::OP_CODES.at(words.at(0))); //store opcode for calling a function
+                    mem->setValueAt(address + 2, subroutines.at(words.at(1)).param_count); //store amount of parameters
                     for(int i = 0; i < subroutines.at(words.at(1)).param_count * 2; i += 2) { //store all the parameters
                         addressCompound adcp = getAdress(words.at(2+i),state, curr_s_name);
-                        mem.setValueAt(address + 3 + i, adcp.op_add); //store type of address
-                        mem.setValueAt(address + 4 + i, adcp.address); //store the address maped to the identifier
+                        mem->setValueAt(address + 3 + i, adcp.op_add); //store type of address
+                        mem->setValueAt(address + 4 + i, adcp.address); //store the address maped to the identifier
                     }
-                    mem.setValueAt(address + subroutines.at(words.at(1)).param_count * 2 + 3, subroutines.at(words.at(1)).address);
+                    mem->setValueAt(address + subroutines.at(words.at(1)).param_count * 2 + 3, subroutines.at(words.at(1)).address);
                 } else if(words.size() == 2) {
                     //mnemonic with one argument
                     addressCompound adcp = getAdress(words.at(1), state, curr_s_name);
-                    mem.setValueAt(address + 1, Constants::OP_CODES.at(words.at(0)) + adcp.op_add);
-                    mem.setValueAt(address + 2, adcp.address);
+                    mem->setValueAt(address + 1, Constants::OP_CODES.at(words.at(0)) + adcp.op_add);
+                    mem->setValueAt(address + 2, adcp.address);
                 } else if(words.size() == 3) {
                     //mnemonic with two arguments (currently MOV is the only instruction with exactly two arguments, therefore the arg vals can just be added together with a shift of eleven)
-                    mem.setValueAt(address + 1,Constants::OP_CODES.at(words.at(0)));
+                    mem->setValueAt(address + 1,Constants::OP_CODES.at(words.at(0)));
                     addressCompound adcp1 = getAdress(words.at(1), state, curr_s_name);
                     addressCompound adcp2 = getAdress(words.at(2), state, curr_s_name);
-                    mem.setValueAt(address + 2, adcp1.address + (adcp2.address << 11));
+                    mem->setValueAt(address + 2, adcp1.address + (adcp2.address << 11));
                 } else {
                     //something weird happened
                     Logger::error("Syntax error!");
@@ -142,10 +145,10 @@ void Assembler::assemble(std::string code, RAM& mem) {
         else if(words.size() > 0
                 && Constants::ASSEMBLY_INST.find(words.at(0)) == Constants::ASSEMBLY_INST.end()) address += 2; //normal op code requires two memory slots (OP-Code + Argument)
     }
-    mem.setValueAt(1,address); //set the value the datapointer should be set to
+    mem->setValueAt(1,address + 1); //set the value the datapointer should be set to
 }
 
-std::string Assembler::disassemble(RAM& mem) {
+std::string Assembler::disassemble(RAM* mem) {
     return "";
 }
 
@@ -179,7 +182,7 @@ Assembler::addressCompound Assembler::getAdress(std::string idf, int state, std:
     Logger::debug("Processing identifier: " + idf);
     addressCompound result;
     result.valid = false;
-    if(std::regex_match(idf,std::regex("^[0-9]"))) {
+    if(std::regex_match(idf,std::regex("^[0-9][x0-9][0-9]*"))) {
         //if identifier is a number, it serves as the effective address/value
         std::stringstream ss(idf);
         sint effective_address;
@@ -212,7 +215,7 @@ Assembler::addressCompound Assembler::getAdress(std::string idf, int state, std:
             result.op_add = Constants::ADR_REG;
             result.valid = true;
         } else {
-            Logger::error("Undefined Identifier!"); //identifier has not been defined (yet)!
+            Logger::error("Undefined Identifier: " + idf); //identifier has not been defined (yet)!
         }
     }
     Logger::debug("Found address: ", result.address);

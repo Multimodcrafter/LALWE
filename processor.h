@@ -11,10 +11,12 @@ public:
     /** runs the programm stored in the ram*/
     void runProgram();
 
-private:
-    Controller controller;
+    RAM* getRam();
 
-    ALU alu;
+private:
+    Controller* controller;
+
+    ALU* alu;
 };
 
 #endif // PROCESSOR_H

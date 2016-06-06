@@ -5,19 +5,25 @@
 #include "stdint.h"
 #define sint int32_t
 
-#define NOP 0x00
-#define MOV 0x10
-#define HLT 0x20
-#define CALL 0x30
-#define RET 0x40
-
-
 const std::map<std::string,const sint> Constants::OP_CODES = {
     {"nop",NOP},
     {"mov",MOV},
     {"hlt",HLT},
     {"call",CALL},
-    {"ret",RET}
+    {"ret",RET},
+    {"ld1",LD1},
+    {"ld2",LD2},
+    {"lde",LDE},
+    {"lda",LDA},
+    {"sto",STO},
+    {"add",ADD},
+    {"addi",ADDI},
+    {"sub",SUB},
+    {"subi",SUBI},
+    {"mul",MUL},
+    {"muli",MULI},
+    {"div",DIV},
+    {"divi",DIVI},
 };
 
 const std::map<std::string,const sint> Constants::REG_NAMES = {

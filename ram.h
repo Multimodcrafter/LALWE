@@ -10,10 +10,10 @@ public:
     RAM();
 
     /** returns the value inside the RAM at the specified location*/
-    sint getValueAt(sint);
+    sint getValueAt(sint addr);
 
     /** stores the given value inside the RAM at the specified location*/
-    void setValueAt(sint, sint);
+    void setValueAt(sint addr, sint value);
 
     /** returns the address range*/
     sint getMaxAddress();

@@ -11,26 +11,26 @@ public:
     Controller();
 
     /** returns the currently stored value in the specified register*/
-    sint getRegisterVal(sint);
+    sint getRegisterVal(sint reg);
 
     /** stores the given value in the specified register*/
-    void setRegisterVal(sint,sint);
+    void setRegisterVal(sint reg,sint val);
 
     /** loads a value directly from ram into the IN register*/
-    void loadRamValDir(sint);
+    void loadRamValDir(sint addr);
 
     /** loads a value indirectly from ram into the IN register using the IND1 or IND2 register*/
-    void loadRamValInd(sint,sint);
+    void loadRamValInd(sint addr,sint pos);
 
-    /** stores a value in ram at the specified location*/
-    void storeRamVal(sint);
+    /** stores the value in the accumulator in ram at the specified location*/
+    void storeRamVal(sint addr);
 
     /** calculates the effective address out of the given relative address,
      * using the specified mode (Global, Local, Parameter)
      * if the mode is local, the function checks wether the address is in the range of the stack pointer
      * if not, it is increased apropriately
      */
-    sint calcAddress(sint,sint);
+    sint calcAddress(sint addr,sint mode);
 
     /** fetches the value at the first ram slot and puts it into the PC register.
      * fetches the value at the second ram slot and puts it into the DataPointer register
@@ -57,10 +57,14 @@ public:
      */
     void returnFunction();
 
+    RAM* getRam();
+
+    void debugProcessor();
+
 private:
     Register *registers;
 
-    RAM ram;
+    RAM* ram;
 
 };
 

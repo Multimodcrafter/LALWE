@@ -30,3 +30,9 @@ void Logger::error(std::string message) {
         std::cerr << "Error: " << message << std::endl;
     }
 }
+
+void Logger::error(std::string message, sint value) {
+    if(Logger::loglevel <= 2) {
+        std::cerr << "Error: " << message << value<< std::endl;
+    }
+}

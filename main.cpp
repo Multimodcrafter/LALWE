@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include <QApplication>
 #include "assembler.h"
+#include "processor.h"
 
 int main(int argc, char *argv[])
 {
@@ -8,8 +9,9 @@ int main(int argc, char *argv[])
     MainWindow w;
     w.show();
     Assembler assembler;
-    RAM ram;
-    assembler.assemble("define varA\ndefine varB\nhlt varB\nfunction test par1\nhlt par1\ndefine someVar\nhlt someVar\nendfunction\nentrypoint\ncall test 0",ram);
-    ram.debugRam();
+    Processor processor;
+    RAM* ram = processor.getRam();
+    assembler.assemble("define varA\nlda 15\nmov in acc\nsto varA\ndefine varB\nsto varB\nadd varB\nsto varB",ram);
+    processor.runProgram();
     return a.exec();
 }

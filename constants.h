@@ -5,6 +5,25 @@
 #include "stdint.h"
 #define sint int32_t
 
+#define NOP 0x000
+#define MOV 0x010
+#define HLT 0x020
+#define CALL 0x030
+#define RET 0x040
+#define LD1 0x050
+#define LD2 0x060
+#define LDE 0x070
+#define LDA 0x080
+#define STO 0x090
+#define ADD 0x0A0
+#define ADDI 0x0B0
+#define DIV 0x0C0
+#define DIVI 0x0D0
+#define MUL 0x0E0
+#define MULI 0x0F0
+#define SUB 0x100
+#define SUBI 0x110
+
 class Constants
 {
 public:
@@ -36,10 +55,17 @@ public:
     static const int REG_SPT = 1 << 9;
     static const int REG_FPT = 1 << 10;
 
+    /** constants for flagpositions*/
+    static const int FLA_OVERFLOW = 1;
+    static const int FLA_SIGN = 1 << 1;
+    static const int FLA_ZERO = 1 << 2;
+    static const int FLA_PARITY = 1 << 3;
+    //static const int FLA_CARRY = 1 << 4;
+
     /** getter for the dissassembly*/
-    static std::string getMnemonic(sint);
+    static std::string getMnemonic(sint opcode);
     /** formater function for hex values*/
-    static std::string intToHex(sint);
+    static std::string intToHex(sint i);
 
 private:
 
