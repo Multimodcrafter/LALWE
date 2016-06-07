@@ -5,14 +5,14 @@
 
 Controller::Controller()
 {
-    registers = new Register[11];
+    registers = std::vector<Register>(11);
 
     ram = new RAM();
 }
 
 sint Controller::getRegisterVal(sint reg) {
     for(int i = 0; i <= 10; ++i) {
-        if((reg & (1 << i)) != 0) return registers[i].getValue();
+        if((reg & (1 << i)) != 0) return registers.at(i).getValue();
     }
     Logger::error("Inexistent register dereferenced.");
     return 0;
@@ -21,7 +21,7 @@ sint Controller::getRegisterVal(sint reg) {
 void Controller::setRegisterVal(sint reg, sint val) {
     for(int i = 0; i <= 10; ++i) {
         if((reg & (1 << i)) != 0) {
-            registers[i].setValue(val);
+            registers.at(i).setValue(val);
             break;
         }
     }
@@ -31,31 +31,22 @@ void Controller::loadRamValDir(sint addr) {
     this->setRegisterVal(Constants::REG_IN,ram->getValueAt(addr));
 }
 
-void Controller::loadRamValInd(sint addr, sint pos) {
-    switch(pos) {
-        case 1:
-            this->setRegisterVal(Constants::REG_IND1,ram->getValueAt(addr));
-            this->setRegisterVal(Constants::REG_IN,
-                                 ram->getValueAt(this->getRegisterVal(Constants::REG_IND1)));
-            break;
-        case 2:
-            this->setRegisterVal(Constants::REG_IND2,ram->getValueAt(addr));
-            this->setRegisterVal(Constants::REG_IN,
-                                 ram->getValueAt(this->getRegisterVal(Constants::REG_IND2)));
-            break;
-        default:
-            Logger::error("Inexistent indirect register chosen while loading value from ram->");
-            return;
-    }
+void Controller::loadRamValInd(sint addr) {
+    this->setRegisterVal(Constants::REG_IND1,ram->getValueAt(addr));
+    this->setRegisterVal(Constants::REG_IN,
+    ram->getValueAt(this->getRegisterVal(Constants::REG_IND1)));
 }
 
 void Controller::storeRamVal(sint addr) {
     ram->setValueAt(addr,this->getRegisterVal(Constants::REG_ACC));
 }
 
-sint Controller::calcAddress(sint addr, sint mode) {
+sint Controller::calcActualValue(sint addr, sint mode, bool indirect) {
     switch(mode) {
         case Constants::ADR_GLOBAL:
+            if(indirect) {
+                return ram->getValueAt(this->getRegisterVal(Constants::REG_DPT) + addr);
+            }
             return this->getRegisterVal(Constants::REG_DPT) + addr;
         case Constants::ADR_LOCAL:
         {
@@ -63,12 +54,61 @@ sint Controller::calcAddress(sint addr, sint mode) {
             if(this->getRegisterVal(Constants::REG_SPT) > result) {
                 this->setRegisterVal(Constants::REG_SPT,result + 1);
             }
+            if(indirect) {
+                return ram->getValueAt(result);
+            }
             return result;
         }
         case Constants::ADR_PARAMETER:
+            if(indirect) {
+                return ram->getValueAt(this->getRegisterVal(Constants::REG_FPT) + addr);
+            }
             return this->getRegisterVal(Constants::REG_FPT) + addr;
         case Constants::ADR_REG:
-            return -addr;
+            if(indirect) {
+                return ram->getValueAt(this->getRegisterVal(addr));
+            }
+            return addr;
+        case Constants::ADR_ABSOLUTE:
+            if(indirect) {
+                this->setRegisterVal(Constants::REG_IND2, ram->getValueAt(addr));
+                return ram->getValueAt(this->getRegisterVal(Constants::REG_IND2));
+            }
+            return ram->getValueAt(addr);
+        case Constants::VAL_ABSOLUTE:
+            return addr;
+        case Constants::VAL_GLOBAL:
+            if(indirect) {
+                this->setRegisterVal(Constants::REG_IND2, ram->getValueAt(addr + this->getRegisterVal(Constants::REG_DPT)));
+                return ram->getValueAt(this->getRegisterVal(Constants::REG_IND2));
+            }
+            return ram->getValueAt(addr + this->getRegisterVal(Constants::REG_DPT));
+        case Constants::VAL_LOCAL:
+        {
+            sint result = this->getRegisterVal(Constants::REG_FPT) - addr;
+            if(this->getRegisterVal(Constants::REG_SPT) > result) {
+                this->setRegisterVal(Constants::REG_SPT,result + 1);
+            }
+            if(indirect) {
+                this->setRegisterVal(Constants::REG_IND2, ram->getValueAt(result));
+                return ram->getValueAt(this->getRegisterVal(Constants::REG_IND2));
+            }
+            return ram->getValueAt(result);
+        }
+        case Constants::VAL_PARAMETER:
+        {
+            sint result = this->getRegisterVal(Constants::REG_FPT) + addr;
+            if(indirect) {
+                this->setRegisterVal(Constants::REG_IND2, ram->getValueAt(result));
+                return ram->getValueAt(this->getRegisterVal(Constants::REG_IND2));
+            }
+            return ram->getValueAt(result);
+        }
+        case Constants::VAL_REG:
+            if(indirect) {
+                return ram->getValueAt(this->getRegisterVal(addr));
+            }
+            return this->getRegisterVal(addr);
         default:
             return addr;
     }
@@ -96,25 +136,20 @@ sint Controller::fetchInstruction() {
 
 void Controller::callFunction() {
     sint param_count = this->getRegisterVal(Constants::REG_ARG);
-    sint pc = this->getRegisterVal(Constants::REG_PC);
+    sint pc = this->getRegisterVal(Constants::REG_PC) - 2 ;
     sint stp = this->getRegisterVal(Constants::REG_SPT);
-    for(sint i = param_count; i > 0; --i) {
+    for(sint i = (param_count - 1); i >= 0; --i) {
         sint add_type = ram->getValueAt(pc + 2 + i*2);
         sint address = ram->getValueAt(pc + 3 + i*2);
-        address = this->calcAddress(address,add_type);
-        sint value;
-        if(address >= 0) {
-            value = ram->getValueAt(address);
-        } else {
-            value = this->getRegisterVal(-address);
-        }
-        ram->setValueAt(stp - param_count + i, value);
+        address = this->calcActualValue(address,add_type,false);
+        ram->setValueAt(stp - param_count + i + 1, address);
     }
-    ram->setValueAt(stp - param_count, ram->getValueAt(pc + 4 + param_count*2));
+    ram->setValueAt(stp - param_count, pc + 3 + param_count*2);
     ram->setValueAt(stp - param_count - 1, stp);
     ram->setValueAt(stp - param_count - 2, this->getRegisterVal(Constants::REG_FPT));
     this->setRegisterVal(Constants::REG_FPT,stp - param_count);
     this->setRegisterVal(Constants::REG_SPT,stp - param_count - 3);
+    this->setRegisterVal(Constants::REG_PC, ram->getValueAt(pc + param_count * 2 + 2));
 }
 
 void Controller::returnFunction() {

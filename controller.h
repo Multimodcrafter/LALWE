@@ -1,6 +1,7 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 #include "stdint.h"
+#include <vector>
 #include "register.h"
 #include "ram.h"
 #define sint int32_t
@@ -19,18 +20,18 @@ public:
     /** loads a value directly from ram into the IN register*/
     void loadRamValDir(sint addr);
 
-    /** loads a value indirectly from ram into the IN register using the IND1 or IND2 register*/
-    void loadRamValInd(sint addr,sint pos);
+    /** loads a value indirectly from ram into the IN register using the IND1 register*/
+    void loadRamValInd(sint addr);
 
     /** stores the value in the accumulator in ram at the specified location*/
     void storeRamVal(sint addr);
 
-    /** calculates the effective address out of the given relative address,
-     * using the specified mode (Global, Local, Parameter)
+    /** returns the actual value that is represented in the argument
+     * using the specified mode (Global, Local, Parameter, ...)
      * if the mode is local, the function checks wether the address is in the range of the stack pointer
      * if not, it is increased apropriately
      */
-    sint calcAddress(sint addr,sint mode);
+    sint calcActualValue(sint addr,sint mode,bool indirect);
 
     /** fetches the value at the first ram slot and puts it into the PC register.
      * fetches the value at the second ram slot and puts it into the DataPointer register
@@ -62,7 +63,7 @@ public:
     void debugProcessor();
 
 private:
-    Register *registers;
+    std::vector<Register> registers;
 
     RAM* ram;
 

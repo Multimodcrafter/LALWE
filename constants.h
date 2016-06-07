@@ -10,19 +10,17 @@
 #define HLT 0x020
 #define CALL 0x030
 #define RET 0x040
-#define LD1 0x050
-#define LD2 0x060
-#define LDE 0x070
-#define LDA 0x080
-#define STO 0x090
-#define ADD 0x0A0
-#define ADDI 0x0B0
-#define DIV 0x0C0
-#define DIVI 0x0D0
-#define MUL 0x0E0
-#define MULI 0x0F0
-#define SUB 0x100
-#define SUBI 0x110
+#define LDI 0x050
+#define LD 0x060
+#define STO 0x070
+#define ADD 0x080
+#define ADDI 0x090
+#define DIV 0x0A0
+#define DIVI 0x0B0
+#define MUL 0x0C0
+#define MULI 0x0D0
+#define SUB 0x0E0
+#define SUBI 0x0F0
 
 class Constants
 {
@@ -37,10 +35,16 @@ public:
     static const std::set<std::string> ASSEMBLY_INST;
 
     /** constants used to determine if a numeric value is a variable, register or parameter*/
+    static const int ADR_ABSOLUTE = 0;
     static const int ADR_GLOBAL = 1;
     static const int ADR_LOCAL = 2;
     static const int ADR_REG = 3;
     static const int ADR_PARAMETER = 4;
+    static const int VAL_ABSOLUTE = 5;
+    static const int VAL_GLOBAL = 6;
+    static const int VAL_LOCAL = 7;
+    static const int VAL_REG = 9;
+    static const int VAL_PARAMETER = 10;
 
     /** constants for easier register derefrencing*/
     static const int REG_PC = 1;

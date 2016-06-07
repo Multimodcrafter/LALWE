@@ -53,7 +53,9 @@ private:
     };
 
     /** Returns the adress mapped to an identifier, based on the curent state of the assembler (global or inside a function)*/
-    addressCompound getAdress(std::string idf, int state, std::string sub);
+    addressCompound getAddress(std::string idf, int state, std::string sub);
+
+    sint isNumeric(std::string idf);
 };
 
 #endif // ASSEMBLER_H

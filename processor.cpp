@@ -15,7 +15,6 @@ void Processor::runProgram() {
         sint instruction = controller->fetchInstruction(); //fetch the next instruction
         sint normalized_inst = instruction & 0xfffffff0; //remove the instruction mode
         sint instruction_mode = instruction - normalized_inst; //get the instruction mode (i.e. how to treat the address)
-        sint address = 0;
         sint value = 0;
         switch(normalized_inst) {
             case MOV:
@@ -45,91 +44,54 @@ void Processor::runProgram() {
             case RET:
                 controller->returnFunction();
                 break;
-            case LD1:
-                address = controller->calcAddress(controller->getRegisterVal(Constants::REG_ARG),instruction_mode);
-                if(address > 0) {
-                    controller->loadRamValInd(address,1);
-                } else {
-                    controller->loadRamValInd(controller->getRegisterVal(-address),1);
-                }
+            case LDI:
+                value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,false);
+                if(instruction_mode == Constants::VAL_ABSOLUTE || instruction_mode == Constants::VAL_GLOBAL ||
+                        instruction_mode == Constants::VAL_LOCAL || instruction_mode == Constants::VAL_PARAMETER ||
+                        instruction_mode == Constants::VAL_REG) controller->loadRamValDir(value);
+                else controller->loadRamValInd(value);
                 break;
-            case LD2:
-                address = controller->calcAddress(controller->getRegisterVal(Constants::REG_ARG),instruction_mode);
-                if(address > 0) {
-                    controller->loadRamValInd(address,2);
-                } else {
-                    controller->loadRamValInd(controller->getRegisterVal(-address),2);
-                }
-                break;
-            case LDE:
-                address = controller->calcAddress(controller->getRegisterVal(Constants::REG_ARG),instruction_mode);
-                if(address > 0) {
-                    controller->loadRamValDir(address);
-                } else {
-                    controller->loadRamValDir(controller->getRegisterVal(-address));
-                }
-                break;
-            case LDA:
-                controller->setRegisterVal(Constants::REG_IN,controller->getRegisterVal(Constants::REG_ARG));
+            case LD:
+                value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,false);
+                if(instruction_mode == Constants::VAL_ABSOLUTE || instruction_mode == Constants::VAL_GLOBAL ||
+                        instruction_mode == Constants::VAL_LOCAL || instruction_mode == Constants::VAL_PARAMETER ||
+                        instruction_mode == Constants::VAL_REG) controller->setRegisterVal(Constants::REG_IN,value);
+                else controller->loadRamValDir(value);
                 break;
             case STO:
-                address = controller->calcAddress(controller->getRegisterVal(Constants::REG_ARG),instruction_mode);
-                if(address > 0) {
-                    controller->storeRamVal(address);
-                } else {
-                    controller->storeRamVal(controller->getRegisterVal(-address));
-                }
+                value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,false);
+                controller->storeRamVal(value);
                 break;
             case ADD:
-                address = controller->calcAddress(controller->getRegisterVal(Constants::REG_ARG),instruction_mode);
-                if(address > 0) {
-                    controller->loadRamValDir(address);
-                } else {
-                    controller->loadRamValDir(controller->getRegisterVal(-address));
-                }
-                alu->add(controller->getRegisterVal(Constants::REG_IN));
+                value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,false);
+                alu->add(value);
                 break;
             case ADDI:
-                value = controller->calcAddress(controller->getRegisterVal(Constants::REG_ARG),instruction_mode);
+                value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,true);
                 alu->add(value);
                 break;
             case SUB:
-                address = controller->calcAddress(controller->getRegisterVal(Constants::REG_ARG),instruction_mode);
-                if(address > 0) {
-                    controller->loadRamValDir(address);
-                } else {
-                    controller->loadRamValDir(controller->getRegisterVal(-address));
-                }
-                alu->subtract(controller->getRegisterVal(Constants::REG_IN));
+                value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,false);
+                alu->subtract(value);
                 break;
             case SUBI:
-                value = controller->calcAddress(controller->getRegisterVal(Constants::REG_ARG),instruction_mode);
+                value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,true);
                 alu->subtract(value);
                 break;
             case DIV:
-                address = controller->calcAddress(controller->getRegisterVal(Constants::REG_ARG),instruction_mode);
-                if(address > 0) {
-                    controller->loadRamValDir(address);
-                } else {
-                    controller->loadRamValDir(controller->getRegisterVal(-address));
-                }
-                alu->divide(controller->getRegisterVal(Constants::REG_IN));
+                value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,false);
+                alu->divide(value);
                 break;
             case DIVI:
-                value = controller->calcAddress(controller->getRegisterVal(Constants::REG_ARG),instruction_mode);
+                value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,true);
                 alu->divide(value);
                 break;
             case MUL:
-                address = controller->calcAddress(controller->getRegisterVal(Constants::REG_ARG),instruction_mode);
-                if(address > 0) {
-                    controller->loadRamValDir(address);
-                } else {
-                    controller->loadRamValDir(controller->getRegisterVal(-address));
-                }
-                alu->multiply(controller->getRegisterVal(Constants::REG_IN));
+                value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,false);
+                alu->multiply(value);
                 break;
             case MULI:
-                value = controller->calcAddress(controller->getRegisterVal(Constants::REG_ARG),instruction_mode);
+                value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,true);
                 alu->multiply(value);
                 break;
         }

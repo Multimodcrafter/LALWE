@@ -117,21 +117,21 @@ void Assembler::assemble(std::string code, RAM* mem) {
                     mem->setValueAt(address + 1, Constants::OP_CODES.at(words.at(0))); //store opcode for calling a function
                     mem->setValueAt(address + 2, subroutines.at(words.at(1)).param_count); //store amount of parameters
                     for(int i = 0; i < subroutines.at(words.at(1)).param_count * 2; i += 2) { //store all the parameters
-                        addressCompound adcp = getAdress(words.at(2+i),state, curr_s_name);
+                        addressCompound adcp = getAddress(words.at(2+i/2),state, curr_s_name);
                         mem->setValueAt(address + 3 + i, adcp.op_add); //store type of address
                         mem->setValueAt(address + 4 + i, adcp.address); //store the address maped to the identifier
                     }
                     mem->setValueAt(address + subroutines.at(words.at(1)).param_count * 2 + 3, subroutines.at(words.at(1)).address);
                 } else if(words.size() == 2) {
                     //mnemonic with one argument
-                    addressCompound adcp = getAdress(words.at(1), state, curr_s_name);
+                    addressCompound adcp = getAddress(words.at(1), state, curr_s_name);
                     mem->setValueAt(address + 1, Constants::OP_CODES.at(words.at(0)) + adcp.op_add);
                     mem->setValueAt(address + 2, adcp.address);
                 } else if(words.size() == 3) {
                     //mnemonic with two arguments (currently MOV is the only instruction with exactly two arguments, therefore the arg vals can just be added together with a shift of eleven)
                     mem->setValueAt(address + 1,Constants::OP_CODES.at(words.at(0)));
-                    addressCompound adcp1 = getAdress(words.at(1), state, curr_s_name);
-                    addressCompound adcp2 = getAdress(words.at(2), state, curr_s_name);
+                    addressCompound adcp1 = getAddress(words.at(1), state, curr_s_name);
+                    addressCompound adcp2 = getAddress(words.at(2), state, curr_s_name);
                     mem->setValueAt(address + 2, adcp1.address + (adcp2.address << 11));
                 } else {
                     //something weird happened
@@ -178,46 +178,66 @@ bool Assembler::checkIdentifier(std::string identifier) {
     return false;
 }
 
-Assembler::addressCompound Assembler::getAdress(std::string idf, int state, std::string sub) {
+Assembler::addressCompound Assembler::getAddress(std::string idf, int state, std::string sub) {
     Logger::debug("Processing identifier: " + idf);
     addressCompound result;
     result.valid = false;
-    if(std::regex_match(idf,std::regex("^[0-9][x0-9][0-9]*"))) {
+    bool isValue = idf[0] != '&';
+    idf = isValue ? idf : idf.substr(1);
+    if(std::regex_match(idf,std::regex("^[0-9]([xb0-9])?([0-9])*"))) {
         //if identifier is a number, it serves as the effective address/value
         std::stringstream ss(idf);
         sint effective_address;
         ss >> effective_address;
         result.address = effective_address;
-        result.op_add = 0;
+        result.op_add = isValue ? Constants::VAL_ABSOLUTE : Constants::ADR_ABSOLUTE;
         result.valid = true;
-    } else if(state == 1) {
-        //if state is 1, local variables and parameters overwrite global ones
-        subroutine* s = &subroutines.at(sub);
-        if(s->local_var_names.find(idf) != s->local_var_names.end()) {
-            result.address = s->local_var_names.at(idf);
-            result.op_add = Constants::ADR_LOCAL;
-            result.valid = true;
-        } else if(s->param_names.find(idf) != s->param_names.end()) {
-            result.address = s->param_names.at(idf);
-            result.op_add = Constants::ADR_PARAMETER;
-            result.valid = true;
+    } else if(idf.find('[') != idf.length()) {
+        std::string actual_idf = idf.substr(4,idf.find(']') - 4);
+        std::string type = idf.substr(0,3);
+        bool numeric = isNumeric(actual_idf) > -1;
+        if(state == 1 && (type == "loc" || type == "par")) {
+            //if state is 1, local variables and parameters overwrite global ones
+            subroutine* s = &subroutines.at(sub);
+            if(type == "loc" && (s->local_var_names.find(actual_idf) != s->local_var_names.end() || numeric)) {
+                result.address = numeric ? isNumeric(actual_idf) : s->local_var_names.at(actual_idf);
+                result.op_add = isValue ? Constants::VAL_LOCAL : Constants::ADR_LOCAL;
+                result.valid = true;
+            } else if(type == "par" && (s->param_names.find(actual_idf) != s->param_names.end() || numeric)) {
+                result.address = numeric ? isNumeric(actual_idf) : s->param_names.at(actual_idf);
+                result.op_add = isValue ? Constants::VAL_PARAMETER : Constants::ADR_PARAMETER;
+                result.valid = true;
+            }
         }
-    }
-    if(!result.valid) {
-        //if state is 0 only global variables and label names are visible
-        //if state is 1 and no local variables and parameters are found, global ones are searched instead
-        if(varbel_names.find(idf) != varbel_names.end()) {
-            result.address = varbel_names.at(idf);
-            result.op_add = Constants::ADR_GLOBAL;
-            result.valid = true;
-        } else if(Constants::REG_NAMES.find(idf) != Constants::REG_NAMES.end()) {
-            result.address = Constants::REG_NAMES.at(idf);
-            result.op_add = Constants::ADR_REG;
-            result.valid = true;
-        } else {
-            Logger::error("Undefined Identifier: " + idf); //identifier has not been defined (yet)!
+        if(!result.valid) {
+            //if state is 0 only global variables and label names are visible
+            //if state is 1 and no local variables and parameters are found, global ones are searched instead
+            if((type == "dpt" || type == "lab") && (varbel_names.find(actual_idf) != varbel_names.end() || numeric)) {
+                result.address = numeric ? isNumeric(actual_idf) : varbel_names.at(actual_idf);
+                result.op_add = isValue ? Constants::VAL_GLOBAL : Constants::ADR_GLOBAL;
+                result.op_add = type == "lab" ? Constants::VAL_ABSOLUTE : result.op_add;
+                result.valid = true;
+            } else if(type == "reg" && (Constants::REG_NAMES.find(actual_idf) != Constants::REG_NAMES.end() || numeric)) {
+                result.address = numeric ? isNumeric(actual_idf) : Constants::REG_NAMES.at(actual_idf);
+                result.op_add = isValue ? Constants::VAL_REG : Constants::ADR_REG;
+                result.valid = true;
+            } else {
+                Logger::error("Undefined identifier: " + idf); //identifier has not been defined (yet)!
+            }
         }
+    } else {
+        Logger::error("Badly formated identifier: " + idf);
     }
     Logger::debug("Found address: ", result.address);
     return result;
+}
+
+sint Assembler::isNumeric(std::string idf) {
+    if(std::regex_match(idf,std::regex("^[0-9]([xb0-9])?([0-9])*"))) {
+        std::stringstream ss(idf);
+        sint effective_address;
+        ss >> effective_address;
+        return effective_address;
+    }
+    return -1;
 }
