@@ -8,6 +8,8 @@ Controller::Controller()
     registers = std::vector<Register>(11);
 
     ram = new RAM();
+
+    lastComparison = Constants::CMP_EQUAL;
 }
 
 sint Controller::getRegisterVal(sint reg) {
@@ -25,6 +27,54 @@ void Controller::setRegisterVal(sint reg, sint val) {
             break;
         }
     }
+}
+
+void Controller::decRegister(sint reg) {
+    for(int i = 0; i <= 10; ++i) {
+        if((reg & (1 << i)) != 0) {
+            sint val = registers.at(i).getValue();
+            registers.at(i).setValue(val - 1);
+            break;
+        }
+    }
+}
+
+void Controller::incRegister(sint reg) {
+    for(int i = 0; i <= 10; ++i) {
+        if((reg & (1 << i)) != 0) {
+            sint val = registers.at(i).getValue();
+            registers.at(i).setValue(val + 1);
+            break;
+        }
+    }
+}
+
+void Controller::negRegister(sint reg) {
+    for(int i = 0; i <= 10; ++i) {
+        if((reg & (1 << i)) != 0) {
+            sint val = registers.at(i).getValue();
+            registers.at(i).setValue(-val);
+            break;
+        }
+    }
+}
+
+void Controller::notRegister(sint reg) {
+    for(int i = 0; i <= 10; ++i) {
+        if((reg & (1 << i)) != 0) {
+            sint val = registers.at(i).getValue();
+            registers.at(i).setValue(~val);
+            break;
+        }
+    }
+}
+
+void Controller::setLastCmp(int result) {
+    lastComparison = result;
+}
+
+int Controller::getLastCmp() {
+    return lastComparison;
 }
 
 void Controller::loadRamValDir(sint addr) {
@@ -66,7 +116,7 @@ sint Controller::calcActualValue(sint addr, sint mode, bool indirect) {
             return this->getRegisterVal(Constants::REG_FPT) + addr;
         case Constants::ADR_REG:
             if(indirect) {
-                return ram->getValueAt(this->getRegisterVal(addr));
+                this->getRegisterVal(addr);
             }
             return addr;
         case Constants::ADR_ABSOLUTE:

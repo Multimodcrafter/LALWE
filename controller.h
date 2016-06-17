@@ -17,6 +17,18 @@ public:
     /** stores the given value in the specified register*/
     void setRegisterVal(sint reg,sint val);
 
+    void decRegister(sint reg);
+
+    void incRegister(sint reg);
+
+    void negRegister(sint reg);
+
+    void notRegister(sint reg);
+
+    void setLastCmp(int result);
+
+    int getLastCmp();
+
     /** loads a value directly from ram into the IN register*/
     void loadRamValDir(sint addr);
 
@@ -66,6 +78,8 @@ private:
     std::vector<Register> registers;
 
     RAM* ram;
+
+    int lastComparison;
 
 };
 

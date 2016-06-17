@@ -21,6 +21,42 @@
 #define MULI 0x0D0
 #define SUB 0x0E0
 #define SUBI 0x0F0
+#define DEC 0x100
+#define INC 0x110
+#define NEG 0x120
+#define NOT 0x130
+#define AND 0x140
+#define ANDI 0x150
+#define OR 0x160
+#define ORI 0x170
+#define XOR 0x180
+#define XORI 0x190
+#define ROL 0x1A0
+#define ROLI 0x1B0
+#define ROR 0x1C0
+#define RORI 0x1D0
+#define SHL 0x1E0
+#define SHLI 0x1F0
+#define SHR 0x200
+#define SHRI 0x210
+#define CMP 0x220
+#define CMPI 0x230
+#define JG 0x240
+#define JGE 0x250
+#define JL 0x260
+#define JLE 0x270
+#define JE 0x280
+#define JMP 0x290
+#define JO 0x2A0
+#define JNO 0x2B0
+#define JP 0x2C0
+#define JNP 0x2D0
+#define JZ 0x2E0
+#define JNZ 0x2F0
+#define JS 0x300
+#define JNS 0x310
+#define IN 0x320
+#define OUT 0x330
 
 class Constants
 {
@@ -64,7 +100,12 @@ public:
     static const int FLA_SIGN = 1 << 1;
     static const int FLA_ZERO = 1 << 2;
     static const int FLA_PARITY = 1 << 3;
-    //static const int FLA_CARRY = 1 << 4;
+    static const int FLA_CARRY = 1 << 4;
+
+    /** constants for comparison result*/
+    static const int CMP_LESS = 0;
+    static const int CMP_EQUAL = 1;
+    static const int CMP_GREATER = 2;
 
     /** getter for the dissassembly*/
     static std::string getMnemonic(sint opcode);
