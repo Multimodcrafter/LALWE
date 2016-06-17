@@ -8,8 +8,17 @@ class RAM
 {
 public:
     RAM();
-    sint getValueAt(sint);
-    void setValueAt(sint, sint);
+
+    /** returns the value inside the RAM at the specified location*/
+    sint getValueAt(sint addr);
+
+    /** stores the given value inside the RAM at the specified location*/
+    void setValueAt(sint addr, sint value);
+
+    /** returns the address range*/
+    sint getMaxAddress();
+
+    /** prints out a certain range of the RAM for deugging purposes*/
     void debugRam();
 
 private:

@@ -9,10 +9,11 @@ class Logger
 {
 public:
     Logger();
-    static void debug(std::string);
-    static void debug(std::string, sint);
-    static void warning(std::string);
-    static void error(std::string);
+    static void debug(std::string message);
+    static void debug(std::string message, sint value);
+    static void warning(std::string message);
+    static void error(std::string message);
+    static void error(std::string message, sint value);
 
 private:
     static const int loglevel = 0;

@@ -14,9 +14,9 @@ public:
     Assembler();
 
     /** Assembles the code into the RAM*/
-    void assemble(std::string, RAM&);
+    void assemble(std::string code, RAM* mem);
     /** Disassembles the RAM and returns the code*/
-    std::string disassemble(RAM&);
+    std::string disassemble(RAM* mem);
 
 private:
     /** While assembling, this holds the adresses belonging to each variable name and jumplable*/
@@ -38,10 +38,10 @@ private:
     std::map<std::string,subroutine> subroutines;
 
     /** Splits a string into a vector at all delimiter-character occurences*/
-    std::vector<std::string> splitString(std::string,char);
+    std::vector<std::string> splitString(std::string str,char delimiter);
 
     /** Checks if a label-, variable- or subroutinename is valid*/
-    bool checkIdentifier(std::string);
+    bool checkIdentifier(std::string identifier);
 
     /** Stores an address and if its local, global, a parameter or a register*/
     struct addressCompound{
@@ -53,7 +53,9 @@ private:
     };
 
     /** Returns the adress mapped to an identifier, based on the curent state of the assembler (global or inside a function)*/
-    addressCompound getAdress(std::string, int, std::string);
+    addressCompound getAddress(std::string idf, int state, std::string sub);
+
+    sint isNumeric(std::string idf);
 };
 
 #endif // ASSEMBLER_H
