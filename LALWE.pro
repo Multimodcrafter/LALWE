@@ -4,16 +4,13 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT       += qml quick
 
 TARGET = LALWE
 TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
     assembler.cpp \
     ram.cpp \
     logger.cpp \
@@ -23,7 +20,7 @@ SOURCES += main.cpp\
     register.cpp \
     alu.cpp
 
-HEADERS  += mainwindow.h \
+HEADERS  += \
     assembler.h \
     ram.h \
     logger.h \
@@ -33,6 +30,7 @@ HEADERS  += mainwindow.h \
     register.h \
     alu.h
 
-FORMS    += mainwindow.ui
-
 CONFIG  += c++11
+
+RESOURCES += \
+    qml.qrc

@@ -1,5 +1,5 @@
-#include "mainwindow.h"
-#include <QApplication>
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
 #include "assembler.h"
 #include "processor.h"
 #include "stdint.h"
@@ -7,12 +7,15 @@
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
+    QGuiApplication a(argc, argv);
+
+    QQmlApplicationEngine engine;
+    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+
     Assembler assembler;
     Processor* processor = new Processor();
     RAM* ram = processor->getRam();
+
     assembler.assemble("function addthree p1 p2 p3 ra\n\
 mul 0\n\
 add par[p1]\n\
@@ -36,5 +39,6 @@ sto &dpt[testresult]\n\
 define funcresult\n\
 call addfive 1 4 5 10 5 &dpt[funcresult]",ram);
     processor->runProgram();
+
     return a.exec();
 }
