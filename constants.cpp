@@ -90,7 +90,7 @@ std::string Constants::getMnemonic(sint opcode) {
             Constants::MNEMONICS.insert(std::make_pair(it->second,it->first));
         }
     }
-    return Constants::MNEMONICS.at((opcode/10)*10);
+    return Constants::MNEMONICS.at(opcode);
 }
 
 std::string Constants::intToHex(sint i)

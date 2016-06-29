@@ -65,10 +65,9 @@ Item {
                 anchors.fill: parent
                 Text {
                     text: modelData
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.fill: parent
                     verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignHCenter
+                    horizontalAlignment: Text.AlignLeft
                     font.bold: wrapper.ListView.isCurrentItem || index == item1.activeIndex
                 }
             }

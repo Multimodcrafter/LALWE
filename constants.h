@@ -2,6 +2,8 @@
 #define CONSTANTS_H
 #include <map>
 #include <set>
+#include <thread>
+#include <chrono>
 #include "stdint.h"
 #define sint int32_t
 
@@ -84,16 +86,16 @@ public:
 
     /** constants for easier register derefrencing*/
     static const int REG_PC = 1;
-    static const int REG_OPC = 1 << 1;
-    static const int REG_ARG = 1 << 2;
-    static const int REG_ACC = 1 << 3;
-    static const int REG_FLA = 1 << 4;
-    static const int REG_IND1 = 1 << 5;
-    static const int REG_IND2 = 1 << 6;
-    static const int REG_IN = 1 << 7;
-    static const int REG_DPT = 1 << 8;
-    static const int REG_SPT = 1 << 9;
-    static const int REG_FPT = 1 << 10;
+    static const int REG_OPC = 1 << 5;
+    static const int REG_ARG = 1 << 6;
+    static const int REG_ACC = 1 << 4;
+    static const int REG_FLA = 1 << 10;
+    static const int REG_IND1 = 1 << 1;
+    static const int REG_IND2 = 1 << 2;
+    static const int REG_IN = 1 << 3;
+    static const int REG_DPT = 1 << 7;
+    static const int REG_SPT = 1 << 8;
+    static const int REG_FPT = 1 << 9;
 
     /** constants for flagpositions*/
     static const int FLA_OVERFLOW = 1;
@@ -106,6 +108,10 @@ public:
     static const int CMP_LESS = 0;
     static const int CMP_EQUAL = 1;
     static const int CMP_GREATER = 2;
+
+    static const int ANIM_DELAY_MILIS = 200;
+    #define sleep if(doAnimations) std::this_thread::sleep_for(std::chrono::milliseconds(Constants::ANIM_DELAY_MILIS));
+    static const int RAM_VIEW_CELL_AMOUNT = 20;
 
     /** getter for the dissassembly*/
     static std::string getMnemonic(sint opcode);

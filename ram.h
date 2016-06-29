@@ -2,12 +2,17 @@
 #define RAM_H
 #include "stdint.h"
 #include <string>
+#include <QObject>
 #define sint int32_t
 
-class RAM
+class RAM : public QObject
 {
+    Q_OBJECT
+signals:
+    void setCtxtProperty(const QString &name, const QVariant &data);
+    void setGuiProperty(const QString &name, const QVariant &data);
 public:
-    RAM();
+    RAM(QObject &appMgr);
 
     /** returns the value inside the RAM at the specified location*/
     sint getValueAt(sint addr);
@@ -21,8 +26,19 @@ public:
     /** prints out a certain range of the RAM for deugging purposes*/
     void debugRam();
 
+    void toggleHexDisplay(bool newState);
+
+    void toggleAnimations(bool newState);
+
 private:
     sint* memory;
+    sint addressView1;
+    sint addressView2;
+    bool formatHex;
+    bool doAnimations;
+
+    void updateList();
+    void highlightCell(sint addr);
 };
 
 #endif // RAM_H

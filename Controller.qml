@@ -233,7 +233,7 @@ Item {
 
                         Text {
                             id: text5
-                            text: qsTr("Effective address")
+                            text: qsTr("Effective address/value")
                             anchors.rightMargin: 5
                             anchors.leftMargin: 5
                             anchors.fill: parent

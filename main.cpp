@@ -1,9 +1,11 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QObject>
 #include "assembler.h"
 #include "processor.h"
 #include "stdint.h"
-#include <iostream>
+#include "logger.h"
+#include "lalwe_appmanager.h"
 
 int main(int argc, char *argv[])
 {
@@ -11,12 +13,32 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+    QObject* root = engine.rootObjects().at(0);
 
-    Assembler assembler;
-    Processor* processor = new Processor();
-    RAM* ram = processor->getRam();
+    LALWE_AppManager* appMngr = new LALWE_AppManager(engine.rootContext(), root);
 
-    assembler.assemble("function addthree p1 p2 p3 ra\n\
+    QObject::connect(root ,SIGNAL(assembleProgram(QString)),
+                     appMngr, SLOT(assembleSlot(QString)));
+
+    QObject::connect(root ,SIGNAL(saveProgram(QString,QString,int)),
+                     appMngr, SLOT(saveProgramSlot(QString,QString,int)));
+
+    QObject::connect(root ,SIGNAL(openProgram(QString)),
+                     appMngr, SLOT(openProgramSlot(QString)));
+
+    QObject::connect(root ,SIGNAL(playProgram()),
+                     appMngr, SLOT(playProgramSlot()));
+
+    QObject::connect(root ,SIGNAL(toggleAnimations(bool)),
+                     appMngr, SLOT(toggleAnimationsSlot(bool)));
+
+    QObject::connect(root ,SIGNAL(toggleRamHex(bool)),
+                     appMngr, SLOT(toggleRamHex(bool)));
+
+    QObject::connect(root ,SIGNAL(verifyProgram(QString)),
+                     appMngr, SLOT(verifySlot(QString)));
+
+    /*assembler.assemble("function addthree p1 p2 p3 ra\n\
 mul 0\n\
 add par[p1]\n\
 add par[p2]\n\
@@ -38,7 +60,7 @@ define testresult\n\
 sto &dpt[testresult]\n\
 define funcresult\n\
 call addfive 1 4 5 10 5 &dpt[funcresult]",ram);
-    processor->runProgram();
+    processor->runProgram();*/
 
     return a.exec();
 }

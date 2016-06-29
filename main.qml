@@ -10,46 +10,64 @@ ApplicationWindow {
     minimumHeight: 590
     minimumWidth: 973
     visible: true
-    title: "LALWE - Learn Assembly Languages With Ease" + fileName.length > 0 ? (" - " + fileName + changesSaved ? "" : "*") : ""
+    property string fileName: ""
+    title: "LALWE - Learn Assembly Languages With Ease" //+ fileName.length > 0 ? (" - " + fileName + changesSaved ? "" : "*") : ""
+    onFileNameChanged: title = getTitle()
     property var ramModel1: myModel1
     property var ramModel2: myModel2
-    property int activeRamSlot1: 0
-    property int activeRamSlot2: 0
-    property int activeRegister: 10
-    property bool aluActive: true
-    property bool busToAluActive: true
-    property bool busFromAluActive: true
-    property int cycleState: 0
-    property int pc: 1
-    property int ind1: 2
-    property int ind2: 3
-    property int input: 4
-    property int accu: 5
-    property int opc: 6
-    property int arg: 7
-    property int dpt: 8
-    property int spt: 9
-    property int fpt: 10
-    property int fla: 11
-    property int operand: 17
-    property int result: 22
+    property int activeRamSlot1: -1
+    property int activeRamSlot2: -1
+    property int activeRegister: -1
+    property bool aluActive: false
+    property bool busToAluActive: false
+    property bool busFromAluActive: false
+    property int cycleState: -1
+    property int pc: 0
+    property int ind1: 0
+    property int ind2: 0
+    property int input: 0
+    property int accu: 0
+    property int opc: 0
+    property int arg: 0
+    property int dpt: 0
+    property int spt: 0
+    property int fpt: 0
+    property int fla: 0
+    property int operand: 0
+    property int result: 0
     property string operation: "+"
-    property string decodedOpcode: "Add"
-    property string addressMode: "Local"
-    property string effectiveAddress: "0x000000ff"
-    property string dynOutput: "Dynamic output"
+    property string decodedOpcode: "N/A"
+    property string addressMode: "N/A"
+    property string effectiveAddress: "N/A"
+    property string dynOutput: "Dynamic output:"
+    property string status: "Ready"
     property bool changesSaved: true
-    property string fileName: ""
-    signal saveProgram(string code, int mode)
-    signal saveProgramAs(string code)
-    signal openProgram()
-    signal newProgram()
+    onChangesSavedChanged: title = getTitle()
+    signal saveProgram(string code,string path, int mode)
+    signal openProgram(string path)
+    signal playProgram()
     signal verifyProgram(string code)
     signal assembleProgram(string code)
     signal toggleAnimations(bool newState)
     signal toggleRamHex(bool newState)
 
+    onClosing: {
+        if(!changesSaved) {
+            saveDialog.mode = 3
+            saveDialog.visible = true
+            close.accepted = false
+        }
+    }
+
+    function getTitle() {
+        var result = "LALWE - Learn Assembly Languages With Ease"
+        if(fileName.length > 0) result += " - " + fileName
+        if(!changesSaved) result += "*"
+        return result
+    }
+
     function continueWork(mode) {
+        changesSaved = true
         switch(mode) {
         case 1:
             newProgram()
@@ -58,12 +76,37 @@ ApplicationWindow {
             changesSaved = true
             break;
         case 2:
-            openProgram()
+            fileDialog1.title = "Open..."
+            fileDialog1.selectExisting = true;
+            fileDialog1.mode = 0
+            fileDialog1.visible = true
             break;
         case 3:
             window1.close()
             break;
         default:
+        }
+    }
+
+    function getCodeFromFile(code) {
+        textArea1.text = code
+        changesSaved = true
+    }
+
+    FileDialog{
+        property int mode: 0
+        id:fileDialog1
+        title: ""
+        folder: shortcuts.home
+        selectFolder: false
+        selectMultiple: false
+        nameFilters: ["Text files (*.txt)", "All files (*)"]
+        onAccepted: {
+            if(title == "Save...") {
+                saveProgram(textArea1.text,fileUrl.toString().substring(8),mode)
+            } else {
+                openProgram(fileUrl.toString().substring(8))
+            }
         }
     }
 
@@ -74,7 +117,14 @@ ApplicationWindow {
         property int mode: 0
 
         onAccepted: {
-            saveProgram(textArea1.text, mode)
+            if(fileName.length > 0) {
+                saveProgram(textArea1.text,fileName,mode)
+            } else {
+                fileDialog1.title = "Save..."
+                fileDialog1.selectExisting = false;
+                fileDialog1.mode = mode
+                fileDialog1.visible = true
+            }
         }
         onDiscard: {
             continueWork(mode)
@@ -106,7 +156,10 @@ ApplicationWindow {
                 shortcut: StandardKey.Open
                 onTriggered: {
                     if(changesSaved) {
-                        openProgram()
+                        fileDialog1.title = "Open..."
+                        fileDialog1.selectExisting = true;
+                        fileDialog1.mode = 0
+                        fileDialog1.visible = true
                     } else {
                         saveDialog.mode = 2
                         saveDialog.visible = true
@@ -116,12 +169,26 @@ ApplicationWindow {
             MenuItem{
                 text: "&Save"
                 shortcut: StandardKey.Save
-                onTriggered: saveProgram(textArea1.text,0)
+                onTriggered: {
+                    if(fileName.length > 0) {
+                        saveProgram(textArea1.text,fileName,0)
+                    } else {
+                        fileDialog1.title = "Save..."
+                        fileDialog1.selectExisting = false;
+                        fileDialog1.mode = 0
+                        fileDialog1.visible = true
+                    }
+                }
             }
             MenuItem{
                 text: "Save &as..."
                 shortcut: "Ctrl+Shift+S"
-                onTriggered: saveProgramAs(textArea1.text)
+                onTriggered: {
+                    fileDialog1.title = "Save..."
+                    fileDialog1.selectExisting = false;
+                    fileDialog1.mode = 0
+                    fileDialog1.visible = true
+                }
             }
             MenuItem{
                 text: "&Exit"
@@ -155,14 +222,16 @@ ApplicationWindow {
             MenuItem{
                 text: "&Start/Stop"
                 shortcut: "Space"
-            }
-            MenuItem{
-                text: "&Reset"
-                shortcut: "Ctrl+R"
+                onTriggered: {
+                    console.log("event triggered")
+                    playProgram()
+                    console.log("event done")
+                }
             }
             MenuItem{
                 text: "Play &Animations"
                 checkable: true
+                checked: true
                 shortcut: "Ctrl+Shift+A"
                 onToggled: toggleAnimations(checked)
             }
@@ -215,7 +284,9 @@ ApplicationWindow {
     }
 
     statusBar: StatusBar{
-
+        Text{
+            text: window1.status
+        }
     }
 
     TextArea {
@@ -229,6 +300,7 @@ ApplicationWindow {
         anchors.top: parent.top
         anchors.topMargin: 5
         onTextChanged: changesSaved = false
+        Component.onCompleted: changesSaved = true
     }
 
     ColumnLayout {

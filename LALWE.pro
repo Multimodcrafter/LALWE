@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += qml quick
+QT       += qml quick core concurrent
 
 TARGET = LALWE
 TEMPLATE = app
@@ -18,7 +18,8 @@ SOURCES += main.cpp\
     processor.cpp \
     controller.cpp \
     register.cpp \
-    alu.cpp
+    alu.cpp \
+    lalwe_appmanager.cpp
 
 HEADERS  += \
     assembler.h \
@@ -28,7 +29,8 @@ HEADERS  += \
     processor.h \
     controller.h \
     register.h \
-    alu.h
+    alu.h \
+    lalwe_appmanager.h
 
 CONFIG  += c++11
 

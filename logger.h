@@ -14,9 +14,7 @@ public:
     static void warning(std::string message);
     static void error(std::string message);
     static void error(std::string message, sint value);
-
-private:
-    static const int loglevel = 0;
+    static const int loglevel = 1;
 };
 
 #endif // LOGGER_H
