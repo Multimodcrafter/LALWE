@@ -4,6 +4,7 @@
 #define sint int32_t
 #include <QObject>
 #include <QVariant>
+#include <QEventLoop>
 
 class Register : public QObject
 {
@@ -22,9 +23,15 @@ public:
 private:
     sint value;
     bool doAnimations;
+    bool continueAnim;
+    bool idle;
+
     QString name;
     int position;
     void highlightReg(bool active);
+
+public slots:
+    void stepAnimation();
 };
 
 #endif // REGISTER_H

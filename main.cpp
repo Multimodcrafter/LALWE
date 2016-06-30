@@ -38,6 +38,15 @@ int main(int argc, char *argv[])
     QObject::connect(root ,SIGNAL(verifyProgram(QString)),
                      appMngr, SLOT(verifySlot(QString)));
 
+    QObject::connect(root, SIGNAL(animStepForward()),
+                     appMngr, SLOT(animStepForward()));
+
+    QObject::connect(root, SIGNAL(windowClosing()),
+                     appMngr, SLOT(windowClosing()));
+
+    QObject::connect(root, SIGNAL(setRamViewAddr(int,QString)),
+                     appMngr, SLOT(ramViewAddressChanged(int,QString)));
+
     /*assembler.assemble("function addthree p1 p2 p3 ra\n\
 mul 0\n\
 add par[p1]\n\

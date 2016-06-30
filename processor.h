@@ -22,12 +22,16 @@ private:
     Controller* controller;
 
     bool doAnimations;
+    bool continueAnim;
+    bool idle;
 
     ALU* alu;
 
     void setCycleState(int state);
     void setDecodedOpc(QString opc);
     void setEffectiveAddress(QString addr);
+public slots:
+    void stepAnimation();
 };
 
 #endif // PROCESSOR_H

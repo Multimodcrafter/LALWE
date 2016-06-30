@@ -85,11 +85,15 @@ private:
     RAM* ram;
 
     bool doAnimations;
+    bool continueAnim;
+    bool idle;
 
     int lastComparison;
 
     void setAddressMode(std::string mode);
 
+public slots:
+    void stepAnimation();
 };
 
 #endif // CONTROLLER_H

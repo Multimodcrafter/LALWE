@@ -6,8 +6,11 @@ Register::Register(QObject &appMgr, QString &name, int pos) :
 {
     value = 0;
     doAnimations = true;
+    continueAnim = false;
+    idle = false;
     this->name = name;
     QObject::connect(this,SIGNAL(setGuiProperty(QString,QVariant)),&appMgr,SLOT(setGuiProperty(QString,QVariant)));
+    QObject::connect(&appMgr, SIGNAL(stepAnimation()), this, SLOT(stepAnimation()));
 }
 
 sint Register::getValue() {
@@ -38,4 +41,8 @@ void Register::highlightReg(bool active) {
             emit setGuiProperty("activeRegister",QVariant::fromValue(-1));
         }
     }
+}
+
+void Register::stepAnimation() {
+    if(idle) continueAnim = true;
 }

@@ -2,8 +2,8 @@
 #define CONSTANTS_H
 #include <map>
 #include <set>
-#include <thread>
 #include <chrono>
+#include <thread>
 #include "stdint.h"
 #define sint int32_t
 
@@ -109,8 +109,19 @@ public:
     static const int CMP_EQUAL = 1;
     static const int CMP_GREATER = 2;
 
-    static const int ANIM_DELAY_MILIS = 200;
-    #define sleep if(doAnimations) std::this_thread::sleep_for(std::chrono::milliseconds(Constants::ANIM_DELAY_MILIS));
+    static const int ANIM_DELAY_MILIS = 1000;
+    static const int ANIM_ASSEMBLE_DELAY_MILIS = 100;
+
+    #define sleep if(doAnimations) {\
+        idle = true;\
+        while(!continueAnim) \
+        {\
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));\
+        }\
+        idle = false;\
+        continueAnim = false;\
+    }
+
     static const int RAM_VIEW_CELL_AMOUNT = 20;
 
     /** getter for the dissassembly*/

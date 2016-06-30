@@ -19,9 +19,12 @@ Controller::Controller(QObject &appMgr)
 
     ram = new RAM(appMgr);
     doAnimations = true;
+    continueAnim = false;
+    idle = false;
 
     lastComparison = Constants::CMP_EQUAL;
     QObject::connect(this, SIGNAL(setGuiProperty(QString,QVariant)), &appMgr, SLOT(setGuiProperty(QString,QVariant)));
+    QObject::connect(&appMgr, SIGNAL(stepAnimation()), this, SLOT(stepAnimation()));
 }
 
 sint Controller::getRegisterVal(sint reg) {
@@ -277,4 +280,9 @@ void Controller::toggleAnimations(bool newState) {
 
 void Controller::setAddressMode(std::string mode) {
     emit setGuiProperty("addressMode", QVariant::fromValue(QString::fromStdString(mode)));
+    sleep
+}
+
+void Controller::stepAnimation() {
+    if(idle) continueAnim = true;
 }

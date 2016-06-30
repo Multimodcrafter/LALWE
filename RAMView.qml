@@ -5,8 +5,22 @@ Item {
     id: item1
     width: 300
     height: 512
+    property alias button1: button1
+    property alias button2: button2
+    property alias button3: button3
+    property alias textField1: textField1
     property var rAMmodel
     property int activeIndex: 0
+    property int lastactiveIndex: 0
+
+    onActiveIndexChanged: {
+        if(activeIndex > -1) {
+            listView1.positionViewAtIndex(activeIndex, ListView.Contain);
+            lastactiveIndex = activeIndex;
+        } else {
+            listView1.positionViewAtIndex(lastactiveIndex, ListView.Contain);
+        }
+    }
 
     TextField {
         id: textField1
@@ -51,6 +65,16 @@ Item {
         z: -1
 
         model: rAMmodel
+
+        onModelChanged: {
+            if(activeIndex > -1) {
+                listView1.positionViewAtIndex(activeIndex, ListView.Contain);
+                lastactiveIndex = activeIndex;
+            } else {
+                listView1.positionViewAtIndex(lastactiveIndex, ListView.Contain);
+            }
+        }
+
         delegate: MouseArea {
             id: wrapper
             height: 20

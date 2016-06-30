@@ -146,6 +146,7 @@ void Assembler::assemble(std::string code, RAM* mem) {
                 && Constants::ASSEMBLY_INST.find(words.at(0)) == Constants::ASSEMBLY_INST.end()) address += 2; //normal op code requires two memory slots (OP-Code + Argument)
     }
     mem->setValueAt(1,address + 1); //set the value the datapointer should be set to
+    emit assemblyDone();
 }
 
 std::string Assembler::disassemble(RAM* mem) {

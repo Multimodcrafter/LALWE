@@ -50,12 +50,18 @@ ApplicationWindow {
     signal assembleProgram(string code)
     signal toggleAnimations(bool newState)
     signal toggleRamHex(bool newState)
+    signal animStepForward()
+    signal windowClosing()
+    signal setRamViewAddr(int panel, string addr)
+    signal toggleFolow(bool newState)
 
     onClosing: {
         if(!changesSaved) {
             saveDialog.mode = 3
             saveDialog.visible = true
             close.accepted = false
+        } else {
+            windowClosing()
         }
     }
 
@@ -221,12 +227,16 @@ ApplicationWindow {
             title:"&Simulation"
             MenuItem{
                 text: "&Start/Stop"
-                shortcut: "Space"
+                shortcut: "F5"
                 onTriggered: {
-                    console.log("event triggered")
                     playProgram()
-                    console.log("event done")
                 }
+            }
+            MenuItem{
+                text: "Step forward"
+                enabled: window1.status == "Simulation paused"
+                shortcut: "Space"
+                onTriggered: animStepForward()
             }
             MenuItem{
                 text: "Play &Animations"
@@ -269,6 +279,13 @@ ApplicationWindow {
                 checkable: true
                 shortcut: "Ctrl+Shift+H"
                 onToggled: toggleRamHex(checked)
+            }
+            MenuItem{
+                text: "&Folow active RAM cell"
+                checkable: true
+                checked: true
+                shortcut: "Ctrl+F"
+                onToggled: toggleFolow(checked)
             }
         }
         Menu {
@@ -321,6 +338,9 @@ ApplicationWindow {
             Layout.fillWidth: true
             rAMmodel: window1.ramModel1
             activeIndex: window1.activeRamSlot1
+            button1.onClicked: setRamViewAddr(1,rAMView1.textField1.text)
+            button2.onClicked: setRamViewAddr(1,"dec")
+            button3.onClicked: setRamViewAddr(1,"inc")
         }
 
         RAMView {
@@ -330,6 +350,9 @@ ApplicationWindow {
             Layout.fillWidth: true
             rAMmodel: window1.ramModel2
             activeIndex: window1.activeRamSlot2
+            button1.onClicked: setRamViewAddr(2,rAMView2.textField1.text)
+            button2.onClicked: setRamViewAddr(2,"dec")
+            button3.onClicked: setRamViewAddr(2,"inc")
         }
     }
 

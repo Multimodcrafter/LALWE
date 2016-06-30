@@ -10,7 +10,10 @@ Processor::Processor(QObject &appMgr)
     controller = new Controller(appMgr);
     alu = new ALU(controller,appMgr);
     doAnimations = true;
+    continueAnim = false;
+    idle = false;
     QObject::connect(this, SIGNAL(setGuiProperty(QString,QVariant)), &appMgr, SLOT(setGuiProperty(QString,QVariant)));
+    QObject::connect(&appMgr, SIGNAL(stepAnimation()), this, SLOT(stepAnimation()));
 }
 
 void Processor::runProgram() {
@@ -30,8 +33,6 @@ void Processor::runProgram() {
         switch(normalized_inst) {
             case MOV:
             {
-                setEffectiveAddress("N/A");
-                emit setGuiProperty("addressMode",QVariant::fromValue(QString("N/A")));
                 sint argument = controller->getRegisterVal(Constants::REG_ARG);
                 sint reg1 = 0;
                 sint reg2 = 0;
@@ -340,6 +341,9 @@ void Processor::runProgram() {
                 break;
         }
         controller->debugProcessor();
+        emit setGuiProperty("decodedOpcode","N/A");
+        emit setGuiProperty("effectiveAddress", "N/A");
+        emit setGuiProperty("addressMode","N/A");
     }
     setCycleState(-1);
     emit setGuiProperty("status","Ready");
@@ -369,4 +373,9 @@ void Processor::setDecodedOpc(QString opc) {
 
 void Processor::setEffectiveAddress(QString addr) {
     emit setGuiProperty("effectiveAddress", QVariant::fromValue(addr));
+    sleep
+}
+
+void Processor::stepAnimation() {
+    if(idle) continueAnim = true;
 }

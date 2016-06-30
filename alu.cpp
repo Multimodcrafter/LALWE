@@ -4,7 +4,10 @@
 ALU::ALU(Controller* cont,QObject &appMgr) : controller(cont)
 {
     doAnimations = true;
+    continueAnim = false;
+    idle = false;
     QObject::connect(this,SIGNAL(setGuiProperty(QString,QVariant)), &appMgr, SLOT(setGuiProperty(QString,QVariant)));
+    QObject::connect(&appMgr, SIGNAL(stepAnimation()), this, SLOT(stepAnimation()));
 }
 
 void ALU::add(sint value) {
@@ -212,4 +215,10 @@ sint ALU::countBits(sint value) {
         if((value & (1 << i)) != 0) ++count;
     }
     return count;
+}
+
+void ALU::stepAnimation() {
+    if(idle) {
+        continueAnim = true;
+    }
 }

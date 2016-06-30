@@ -43,12 +43,17 @@ private:
     Controller* controller;
 
     bool doAnimations;
+    bool continueAnim;
+    bool idle;
 
     void setOperator(std::string op);
     void setArg(sint);
     void setResult(sint);
 
     sint countBits(sint value);
+
+public slots:
+    void stepAnimation();
 };
 
 #endif // ALU_H

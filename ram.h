@@ -3,6 +3,7 @@
 #include "stdint.h"
 #include <string>
 #include <QObject>
+#include <QEventLoop>
 #define sint int32_t
 
 class RAM : public QObject
@@ -30,15 +31,25 @@ public:
 
     void toggleAnimations(bool newState);
 
+    void setRamViewAddress(int index, QString action);
+
 private:
     sint* memory;
     sint addressView1;
     sint addressView2;
     bool formatHex;
     bool doAnimations;
+    bool continueAnim;
+    bool idle;
+    bool folowActive;
 
     void updateList();
     void highlightCell(sint addr);
+    bool addressInSight(sint addr);
+
+public slots:
+    void stepAnimation();
+    void toggleFolowActive(const bool &newState);
 };
 
 #endif // RAM_H

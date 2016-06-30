@@ -11,6 +11,8 @@
 class LALWE_AppManager : public QObject
 {
     Q_OBJECT
+signals:
+    void stepAnimation();
 
 private:
     QQmlContext* ctxt;
@@ -22,6 +24,7 @@ private:
     bool assemblyRunning;
     QFuture<void> programHandle;
     QFuture<void> assembleHandle;
+    QTimer animationTicker;
 
 public slots:
     void assembleSlot(const QString &code);
@@ -33,6 +36,10 @@ public slots:
     void verifySlot(const QString &code);
     void setCtxProperty(const QString &name, const QVariant &data);
     void setGuiProperty(const QString &name, const QVariant &data);
+    void assemblyDone();
+    void animStepForward();
+    void windowClosing();
+    void ramViewAddressChanged(const int &index, const QString &action);
 
 public:
     LALWE_AppManager(QQmlContext* ctxt, QObject* obj);
