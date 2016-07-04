@@ -18,7 +18,7 @@ RAM::RAM(QObject &appMgr) : memory(new sint [arraysize])
     doAnimations = true;
     continueAnim = false;
     idle = false;
-    folowActive = true;
+    followActive = true;
     QObject::connect(this, SIGNAL(setCtxtProperty(QString,QVariant)), &appMgr, SLOT(setCtxProperty(QString,QVariant)));
     QObject::connect(this, SIGNAL(setGuiProperty(QString,QVariant)), &appMgr, SLOT(setGuiProperty(QString,QVariant)));
     QObject::connect(&appMgr, SIGNAL(stepAnimation()), this, SLOT(stepAnimation()));
@@ -172,7 +172,7 @@ void RAM::highlightCell(sint addr) {
         }
         if(addr >= addressView1 && addr < addressView1 + Constants::RAM_VIEW_CELL_AMOUNT) {
             emit setGuiProperty("activeRamSlot1",QVariant::fromValue(addr - addressView1));
-        } else if(addr >= 0 && addr < arraysize && folowActive) {
+        } else if(addr >= 0 && addr < arraysize && followActive) {
             if(addr < addressView1) {
                 setRamViewAddress(1,QVariant::fromValue(addr).toString());
                 emit setGuiProperty("activeRamSlot1",QVariant::fromValue(0));
@@ -201,6 +201,13 @@ void RAM::stepAnimation() {
     if(idle) continueAnim = true;
 }
 
-void RAM::toggleFolowActive(const bool &newState) {
-    folowActive = newState;
+void RAM::toggleFollowActive(const bool &newState) {
+    followActive = newState;
+}
+
+void RAM::reset() {
+    for(int i = 0; i < arraysize; ++i) {
+        memory[i] = 0;
+    }
+    updateList();
 }

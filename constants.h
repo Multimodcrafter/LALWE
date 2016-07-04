@@ -109,8 +109,9 @@ public:
     static const int CMP_EQUAL = 1;
     static const int CMP_GREATER = 2;
 
-    static const int ANIM_DELAY_MILIS = 1000;
-    static const int ANIM_ASSEMBLE_DELAY_MILIS = 100;
+    static const int ANIM_MAX_DELAY = 1000;
+    static const int ANIM_MIN_DELAY = 10;
+    static int ANIM_DELAY_MILIS;
 
     #define sleep if(doAnimations) {\
         idle = true;\

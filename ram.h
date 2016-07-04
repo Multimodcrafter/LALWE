@@ -33,6 +33,8 @@ public:
 
     void setRamViewAddress(int index, QString action);
 
+    void reset();
+
 private:
     sint* memory;
     sint addressView1;
@@ -41,7 +43,7 @@ private:
     bool doAnimations;
     bool continueAnim;
     bool idle;
-    bool folowActive;
+    bool followActive;
 
     void updateList();
     void highlightCell(sint addr);
@@ -49,7 +51,7 @@ private:
 
 public slots:
     void stepAnimation();
-    void toggleFolowActive(const bool &newState);
+    void toggleFollowActive(const bool &newState);
 };
 
 #endif // RAM_H

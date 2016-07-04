@@ -25,6 +25,7 @@ private:
     QFuture<void> programHandle;
     QFuture<void> assembleHandle;
     QTimer animationTicker;
+    bool doAnimations;
 
 public slots:
     void assembleSlot(const QString &code);
@@ -40,6 +41,10 @@ public slots:
     void animStepForward();
     void windowClosing();
     void ramViewAddressChanged(const int &index, const QString &action);
+    void printLine(const QString &line);
+    void changeAnimSpeed(const double &percentage);
+    void resetProcessor();
+    void getInput(const QString &input);
 
 public:
     LALWE_AppManager(QQmlContext* ctxt, QObject* obj);

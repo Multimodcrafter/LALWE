@@ -85,7 +85,7 @@ Item {
                 textField1.focus = false
             }
             Rectangle{
-                color: index == item1.activeIndex ? "#ff4444" : (wrapper.ListView.isCurrentItem ? "#45D8F9" : (index % 2 == 0 ? "#B7F7FD" : "#B7E3FD"))
+                color: index == item1.activeIndex ? "#ff4444" : (index % 2 == 0 ? "#B7F7FD" : "#B7E3FD")
                 anchors.fill: parent
                 Text {
                     text: modelData

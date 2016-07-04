@@ -236,6 +236,7 @@ void Controller::callFunction() {
         sint add_type = ram->getValueAt(pc + 2 + i*2);
         sint address = ram->getValueAt(pc + 3 + i*2);
         address = this->calcActualValue(address,add_type,false);
+        emit setGuiProperty("effectiveAddress",address);
         ram->setValueAt(stp - param_count + i + 1, address);
     }
     ram->setValueAt(stp - param_count, pc + 3 + param_count*2);
@@ -275,6 +276,13 @@ void Controller::toggleAnimations(bool newState) {
     this->doAnimations = newState;
     for(int i = 0; i < registers.size(); ++i) {
         registers.at(i)->toggleAnimations(newState);
+    }
+}
+
+void Controller::reset() {
+    ram->reset();
+    for(int i = 0; i < registers.size(); ++i) {
+        registers.at(i)->setValue(0);
     }
 }
 

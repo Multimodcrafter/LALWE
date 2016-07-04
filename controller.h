@@ -79,6 +79,8 @@ public:
 
     void toggleAnimations(bool newState);
 
+    void reset();
+
 private:
     QList<Register*> registers;
 

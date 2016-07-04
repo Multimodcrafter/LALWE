@@ -47,29 +47,14 @@ int main(int argc, char *argv[])
     QObject::connect(root, SIGNAL(setRamViewAddr(int,QString)),
                      appMngr, SLOT(ramViewAddressChanged(int,QString)));
 
-    /*assembler.assemble("function addthree p1 p2 p3 ra\n\
-mul 0\n\
-add par[p1]\n\
-add par[p2]\n\
-add par[p3]\n\
-sto par[ra]\n\
-ret\n\
-endfunction\n\
-function addfive p1 p2 p3 p4 p5 ra\n\
-call addthree par[p1] par[p2] par[p3] par[ra]\n\
-ldi par[ra]\n\
-call addthree reg[in] par[p4] par[p5] par[ra]\n\
-ret\n\
-endfunction\n\
-entrypoint\n\
-ld 130\n\
-mov &reg[in] &reg[acc]\n\
-add 10\n\
-define testresult\n\
-sto &dpt[testresult]\n\
-define funcresult\n\
-call addfive 1 4 5 10 5 &dpt[funcresult]",ram);
-    processor->runProgram();*/
+    QObject::connect(root, SIGNAL(changeAnimSpeed(double)),
+                     appMngr, SLOT(changeAnimSpeed(double)));
+
+    QObject::connect(root, SIGNAL(resetSimulation()),
+                     appMngr, SLOT(resetProcessor()));
+
+    QObject::connect(root, SIGNAL(sendInput(QString)),
+                     appMngr, SLOT(getInput(QString)));
 
     return a.exec();
 }

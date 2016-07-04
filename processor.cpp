@@ -12,8 +12,10 @@ Processor::Processor(QObject &appMgr)
     doAnimations = true;
     continueAnim = false;
     idle = false;
+    waitForInput = false;
     QObject::connect(this, SIGNAL(setGuiProperty(QString,QVariant)), &appMgr, SLOT(setGuiProperty(QString,QVariant)));
     QObject::connect(&appMgr, SIGNAL(stepAnimation()), this, SLOT(stepAnimation()));
+    QObject::connect(this, SIGNAL(printLine(QString)), &appMgr, SLOT(printLine(QString)));
 }
 
 void Processor::runProgram() {
@@ -26,7 +28,7 @@ void Processor::runProgram() {
         setCycleState(1);
         sint normalized_inst = instruction & 0xfffffff0; //remove the instruction mode
         sint instruction_mode = instruction - normalized_inst; //get the instruction mode (i.e. how to treat the address)
-        setDecodedOpc(QString::fromStdString(Constants::getMnemonic(normalized_inst)));
+        setDecodedOpc(QString::fromStdString(Constants::getMnemonic(normalized_inst)).toUpper());
         sint value = 0;
         sint cmpResult = 0;
         setCycleState(2);
@@ -336,8 +338,16 @@ void Processor::runProgram() {
                 }
                 break;
             case IN:
+                waitForInput = true;
+                while(waitForInput) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                }
+                controller->setRegisterVal(Constants::REG_IN, inputValue);
                 break;
             case OUT:
+                value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,false);
+                setEffectiveAddress(QVariant::fromValue(value).toString());
+                emit printLine("Program output: " + QVariant::fromValue(value).toString());
                 break;
         }
         controller->debugProcessor();
@@ -359,6 +369,10 @@ void Processor::toggleAnimations(bool newState) {
     doAnimations = newState;
 }
 
+void Processor::reset() {
+    controller->reset();
+}
+
 void Processor::setCycleState(int state) {
     if(doAnimations) {
         emit setGuiProperty("cycleState",QVariant::fromValue(state));
@@ -378,4 +392,9 @@ void Processor::setEffectiveAddress(QString addr) {
 
 void Processor::stepAnimation() {
     if(idle) continueAnim = true;
+}
+
+void Processor::sendInput(sint value) {
+    inputValue = value;
+    waitForInput = false;
 }

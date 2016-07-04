@@ -10,9 +10,10 @@ LALWE_AppManager::LALWE_AppManager(QQmlContext* ctxt, QObject* obj) {
     ram = processor.at(0)->getRam();
     programRunning = false;
     assemblyRunning = false;
+    doAnimations = true;
     QObject::connect(&animationTicker,SIGNAL(timeout()), this, SIGNAL(stepAnimation()));
     QObject::connect(assembler, SIGNAL(assemblyDone()), this, SLOT(assemblyDone()));
-    QObject::connect(obj,SIGNAL(toggleFolow(bool)),ram,SLOT(toggleFolowActive(bool)));
+    QObject::connect(obj,SIGNAL(toggleFollow(bool)),ram,SLOT(toggleFollowActive(bool)));
 }
 
 void LALWE_AppManager::assembleSlot(const QString &code) {
@@ -20,7 +21,7 @@ void LALWE_AppManager::assembleSlot(const QString &code) {
         setGuiProperty("status","Assembling...");
         assemblyRunning = true;
         assembleHandle = QtConcurrent::run(assembler, &Assembler::assemble, code.toStdString(), ram);
-        animationTicker.start(Constants::ANIM_ASSEMBLE_DELAY_MILIS);
+        animationTicker.start(Constants::ANIM_DELAY_MILIS);
     }
 }
 
@@ -108,4 +109,36 @@ void LALWE_AppManager::windowClosing() {
 
 void LALWE_AppManager::ramViewAddressChanged(const int &index, const QString &action) {
     ram->setRamViewAddress(index,action);
+}
+
+void LALWE_AppManager::printLine(const QString &line) {
+    QMetaObject::invokeMethod(guiObject,"printLine",Q_ARG(QVariant,line));
+}
+
+void LALWE_AppManager::changeAnimSpeed(const double &percentage) {
+    Constants::ANIM_DELAY_MILIS = Constants::ANIM_MAX_DELAY - (Constants::ANIM_MAX_DELAY - Constants::ANIM_MIN_DELAY) * percentage / 100;
+    animationTicker.setInterval(Constants::ANIM_DELAY_MILIS);
+}
+
+void LALWE_AppManager::resetProcessor() {
+    processor.at(0)->toggleAnimations(false);
+    setGuiProperty("activeRamSlot1",-1);
+    setGuiProperty("activeRamSlot2",-1);
+    setGuiProperty("activeRegister",-1);
+    setGuiProperty("aluActive",false);
+    setGuiProperty("busToAluActive",false);
+    setGuiProperty("busFromAluActive",false);
+    setGuiProperty("cycleState",-1);
+    setGuiProperty("operand",0);
+    setGuiProperty("result",0);
+    setGuiProperty("operation","+");
+    setGuiProperty("decodedOpcode","N/A");
+    setGuiProperty("effectiveAddress","N/A");
+    setGuiProperty("addressMode","N/A");
+    processor.at(0)->reset();
+    processor.at(0)->toggleAnimations(doAnimations);
+}
+
+void LALWE_AppManager::getInput(const QString &input) {
+    processor.at(0)->sendInput(input.toInt());
 }

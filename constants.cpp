@@ -102,6 +102,8 @@ std::string Constants::intToHex(sint i)
   return stream.str();
 }
 
+int Constants::ANIM_DELAY_MILIS = Constants::ANIM_MIN_DELAY + (Constants::ANIM_MAX_DELAY - Constants::ANIM_MIN_DELAY) / 2;
+
 Constants::Constants()
 {
 

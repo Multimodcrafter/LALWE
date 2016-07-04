@@ -11,7 +11,7 @@ ApplicationWindow {
     minimumWidth: 973
     visible: true
     property string fileName: ""
-    title: "LALWE - Learn Assembly Languages With Ease" //+ fileName.length > 0 ? (" - " + fileName + changesSaved ? "" : "*") : ""
+    title: "LALWE - Learn Assembly Languages With Ease"
     onFileNameChanged: title = getTitle()
     property var ramModel1: myModel1
     property var ramModel2: myModel2
@@ -39,7 +39,7 @@ ApplicationWindow {
     property string decodedOpcode: "N/A"
     property string addressMode: "N/A"
     property string effectiveAddress: "N/A"
-    property string dynOutput: "Dynamic output:"
+    property string dynOutput: "Dynamic output:\n"
     property string status: "Ready"
     property bool changesSaved: true
     onChangesSavedChanged: title = getTitle()
@@ -53,7 +53,10 @@ ApplicationWindow {
     signal animStepForward()
     signal windowClosing()
     signal setRamViewAddr(int panel, string addr)
-    signal toggleFolow(bool newState)
+    signal toggleFollow(bool newState)
+    signal changeAnimSpeed(real percentage)
+    signal resetSimulation()
+    signal sendInput(string text)
 
     onClosing: {
         if(!changesSaved) {
@@ -63,6 +66,10 @@ ApplicationWindow {
         } else {
             windowClosing()
         }
+    }
+
+    function printLine(line) {
+        dynOutput += line + "\n";
     }
 
     function getTitle() {
@@ -233,11 +240,18 @@ ApplicationWindow {
                 }
             }
             MenuItem{
-                text: "Step forward"
+                text: "Step &forward"
                 enabled: window1.status == "Simulation paused"
                 shortcut: "Space"
                 onTriggered: animStepForward()
             }
+            MenuItem{
+                text: "&Reset"
+                shortcut: "Ctrl+R"
+                enabled: window1.status == "Ready"
+                onTriggered: resetSimulation()
+            }
+
             MenuItem{
                 text: "Play &Animations"
                 checkable: true
@@ -582,6 +596,9 @@ ApplicationWindow {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 5
         placeholderText: qsTr("Dynamic input")
+        Keys.onReturnPressed: {
+            sendInput(text);
+        }
     }
 
     Bus {
@@ -670,6 +687,34 @@ ApplicationWindow {
         anchors.rightMargin: 308
         anchors.top: parent.top
         anchors.topMargin: 444
+    }
+
+    Slider {
+        id: sliderHorizontal1
+        x: 588
+        width: 182
+        height: 22
+        stepSize: 1
+        anchors.right: parent.right
+        anchors.rightMargin: 510
+        maximumValue: 100
+        minimumValue: 0
+        value: 50
+        tickmarksEnabled: false
+        anchors.top: parent.top
+        anchors.topMargin: 447
+        onValueChanged: changeAnimSpeed(value)
+    }
+
+    Text {
+        id: text1
+        x: 588
+        text: qsTr("Animation speed:")
+        anchors.right: parent.right
+        anchors.rightMargin: 599
+        anchors.top: parent.top
+        anchors.topMargin: 427
+        font.pixelSize: 12
     }
 
 

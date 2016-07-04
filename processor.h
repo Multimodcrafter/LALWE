@@ -8,6 +8,7 @@ class Processor : public QObject
     Q_OBJECT
 signals:
     void setGuiProperty(const QString &name, const QVariant &data);
+    void printLine(const QString &line);
 public:
     Processor(QObject &appMgr);
 
@@ -18,12 +19,18 @@ public:
 
     void toggleAnimations(bool newState);
 
+    void reset();
+
+    void sendInput(sint value);
+
 private:
     Controller* controller;
 
     bool doAnimations;
     bool continueAnim;
     bool idle;
+    bool waitForInput;
+    sint inputValue;
 
     ALU* alu;
 
