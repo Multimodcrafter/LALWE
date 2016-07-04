@@ -6,10 +6,13 @@
 #include "ram.h"
 #define sint int32_t
 
-class Controller
+class Controller : public QObject
 {
+    Q_OBJECT
+signals:
+    void setGuiProperty(const QString &name, const QVariant &data);
 public:
-    Controller();
+    Controller(QObject &appMgr);
 
     /** returns the currently stored value in the specified register*/
     sint getRegisterVal(sint reg);
@@ -74,13 +77,25 @@ public:
 
     void debugProcessor();
 
+    void toggleAnimations(bool newState);
+
+    void reset();
+
 private:
-    std::vector<Register> registers;
+    QList<Register*> registers;
 
     RAM* ram;
 
+    bool doAnimations;
+    bool continueAnim;
+    bool idle;
+
     int lastComparison;
 
+    void setAddressMode(std::string mode);
+
+public slots:
+    void stepAnimation();
 };
 
 #endif // CONTROLLER_H

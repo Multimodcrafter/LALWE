@@ -90,7 +90,7 @@ std::string Constants::getMnemonic(sint opcode) {
             Constants::MNEMONICS.insert(std::make_pair(it->second,it->first));
         }
     }
-    return Constants::MNEMONICS.at((opcode/10)*10);
+    return Constants::MNEMONICS.at(opcode);
 }
 
 std::string Constants::intToHex(sint i)
@@ -101,6 +101,8 @@ std::string Constants::intToHex(sint i)
          << std::hex << i;
   return stream.str();
 }
+
+int Constants::ANIM_DELAY_MILIS = Constants::ANIM_MIN_DELAY + (Constants::ANIM_MAX_DELAY - Constants::ANIM_MIN_DELAY) / 2;
 
 Constants::Constants()
 {

@@ -20,7 +20,7 @@ void Assembler::assemble(std::string code, RAM* mem) {
 
     sint address = 0;
 
-    //first iteration to get all the information about all subroutines
+    //first iteration to get all the information about all subroutines and labels
     for(std::string e : lines) {
         Logger::debug(e);
         std::vector<std::string> words = splitString(e,' ');
@@ -32,6 +32,7 @@ void Assembler::assemble(std::string code, RAM* mem) {
 
         //current subroutine definition
         bool isFunctionDef = false;
+        bool isLabel = false;
         sint paramcount = -1;
         std::string name = "";
         subroutine s;
@@ -49,7 +50,11 @@ void Assembler::assemble(std::string code, RAM* mem) {
                     if(checkIdentifier(w))s.param_names.insert(std::make_pair(w,paramcount)); //map param_name to position of parameter
                     else break; //error: invalid identifier!!
                 }
-            } else break; //current line doesn't contain a function def
+            } else if(w == ":") {
+                isLabel = true; //current line is a label def
+            } else if(isLabel) {
+                varbel_names.insert(std::make_pair(w,address + 2));
+            } else break; //current line doesn't contain a function def or label
             Logger::debug(w);
         }
 
@@ -84,7 +89,7 @@ void Assembler::assemble(std::string code, RAM* mem) {
                     } else break;
                 } else {
                     if(checkIdentifier(words.at(1))) {
-                        ++localvarcount; //local vars are three basedly indexed since the frame pointer points to the return address and the previous frame and stack pointer value folow
+                        ++localvarcount; //local vars are three basedly indexed since the frame pointer points to the return address and the previous frame and stack pointer value follow
                         curr_s->local_var_names.insert(std::make_pair(words.at(1),localvarcount));
                     } else break;
                 }
@@ -146,6 +151,7 @@ void Assembler::assemble(std::string code, RAM* mem) {
                 && Constants::ASSEMBLY_INST.find(words.at(0)) == Constants::ASSEMBLY_INST.end()) address += 2; //normal op code requires two memory slots (OP-Code + Argument)
     }
     mem->setValueAt(1,address + 1); //set the value the datapointer should be set to
+    emit assemblyDone();
 }
 
 std::string Assembler::disassemble(RAM* mem) {

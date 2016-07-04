@@ -8,8 +8,11 @@
 #include "ram.h"
 #include <vector>
 
-class Assembler
+class Assembler : public QObject
 {
+    Q_OBJECT
+signals:
+    void assemblyDone();
 public:
     Assembler();
 

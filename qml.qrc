@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/">
+        <file>ALU.qml</file>
+        <file>ALU-Graphic.png</file>
+        <file>Bus.qml</file>
+        <file>Controller.qml</file>
+        <file>main.qml</file>
+        <file>RAMView.qml</file>
+        <file>Register.qml</file>
+    </qresource>
+</RCC>

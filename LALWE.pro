@@ -4,16 +4,13 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT       += qml quick core concurrent
 
 TARGET = LALWE
 TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
     assembler.cpp \
     ram.cpp \
     logger.cpp \
@@ -21,9 +18,10 @@ SOURCES += main.cpp\
     processor.cpp \
     controller.cpp \
     register.cpp \
-    alu.cpp
+    alu.cpp \
+    lalwe_appmanager.cpp
 
-HEADERS  += mainwindow.h \
+HEADERS  += \
     assembler.h \
     ram.h \
     logger.h \
@@ -31,8 +29,10 @@ HEADERS  += mainwindow.h \
     processor.h \
     controller.h \
     register.h \
-    alu.h
-
-FORMS    += mainwindow.ui
+    alu.h \
+    lalwe_appmanager.h
 
 CONFIG  += c++11
+
+RESOURCES += \
+    qml.qrc
