@@ -125,6 +125,8 @@ public:
 
     static const int RAM_VIEW_CELL_AMOUNT = 20;
 
+    static long long int ARRAYSIZE;
+
     /** getter for the dissassembly*/
     static std::string getMnemonic(sint opcode);
     /** formater function for hex values*/

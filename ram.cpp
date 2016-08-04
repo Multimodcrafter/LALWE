@@ -5,13 +5,11 @@
 #include "logger.h"
 #include <sstream>
 #include <QVariant>
-#define arraysize (1 << 7)
+#define arraysize (Constants::ARRAYSIZE)
 
-RAM::RAM(QObject &appMgr) : memory(new sint [arraysize])
+RAM::RAM(QObject &appMgr)
 {
-    for(int i = 0; i < arraysize; ++i) {
-        memory[i] = 0;
-    }
+    memory.resize(arraysize);
     addressView1 = 0;
     addressView2 = arraysize - Constants::RAM_VIEW_CELL_AMOUNT;
     formatHex = false;
@@ -139,7 +137,7 @@ void RAM::setRamViewAddress(int index, QString action) {
 
 void RAM::updateList() {
     QStringList list;
-    for(int i = addressView1; i < addressView1 + Constants::RAM_VIEW_CELL_AMOUNT && i < arraysize; ++i) {
+    for(long long int i = addressView1; i < addressView1 + Constants::RAM_VIEW_CELL_AMOUNT && i < arraysize; ++i) {
         std::stringstream ss;
         if(formatHex) {
             ss << Constants::intToHex(i) << ":\t" << Constants::intToHex(memory[i]);
@@ -151,7 +149,7 @@ void RAM::updateList() {
     }
     emit setCtxtProperty("myModel1",QVariant::fromValue(list));
     list.clear();
-    for(int i = addressView2; i < addressView2 + Constants::RAM_VIEW_CELL_AMOUNT && i < arraysize; ++i) {
+    for(long long int i = addressView2; i < addressView2 + Constants::RAM_VIEW_CELL_AMOUNT && i < arraysize; ++i) {
         std::stringstream ss;
         if(formatHex) {
             ss << Constants::intToHex(i) << ":\t" << Constants::intToHex(memory[i]);
@@ -206,8 +204,7 @@ void RAM::toggleFollowActive(const bool &newState) {
 }
 
 void RAM::reset() {
-    for(int i = 0; i < arraysize; ++i) {
-        memory[i] = 0;
-    }
+    memory.clear();
+    memory.resize(arraysize);
     updateList();
 }

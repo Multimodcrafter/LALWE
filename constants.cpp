@@ -104,6 +104,8 @@ std::string Constants::intToHex(sint i)
 
 int Constants::ANIM_DELAY_MILIS = Constants::ANIM_MIN_DELAY + (Constants::ANIM_MAX_DELAY - Constants::ANIM_MIN_DELAY) / 2;
 
+long long int Constants::ARRAYSIZE = (1 << 31) - 1;
+
 Constants::Constants()
 {
 

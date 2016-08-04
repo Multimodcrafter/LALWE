@@ -2,6 +2,7 @@ import QtQuick 2.5
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.3
 import QtQuick.Dialogs 1.2
+import QtQuick.Window 2.2
 
 ApplicationWindow {
     id: window1
@@ -144,6 +145,30 @@ ApplicationWindow {
         }
         text: "You have made changes to your currently open program! Do you want to save those changes?"
         icon: StandardIcon.Warning
+    }
+
+    Window{
+        id: aboutDialog
+        title: "About LALWE..."
+        width: 300
+        minimumWidth: 300
+        maximumWidth: 300
+        height: 200
+        minimumHeight: 200
+        maximumHeight: 200
+        flags: Qt.Dialog | Qt.CustomizeWindowHint | Qt.WindowTitleHint
+        modality: Qt.ApplicationModal
+        Text{
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: 30
+            text: "LALWE - Learn Assembly Languages With Ease\n\nVersion: 1.0\nCreated with love by Robin Hänni\n\nLALWE is licensed under the GNU gpl v3\nLALWE uses the Qt and stxxl library"
+        }
+        Button{
+            text: "Ok"
+            y: 150
+            anchors.horizontalCenter: parent.horizontalCenter
+            onClicked: aboutDialog.close()
+        }
     }
 
     menuBar: MenuBar {
@@ -307,9 +332,11 @@ ApplicationWindow {
             MenuItem{
                 text: "&Documentation..."
                 shortcut: "F1"
+                onTriggered: Qt.openUrlExternally("https://github.com/Multimodcrafter/LALWE/wiki")
             }
             MenuItem{
                 text: "&About LALWE..."
+                onTriggered: aboutDialog.visible = true;
             }
         }
     }
