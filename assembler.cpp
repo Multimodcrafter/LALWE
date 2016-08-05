@@ -436,11 +436,9 @@ Assembler::addressCompound Assembler::getAddress(std::string idf, int state, std
     result.valid = false;
     bool isValue = idf[0] != '&';
     idf = isValue ? idf : idf.substr(1);
-    if(std::regex_match(idf,std::regex("^[0-9]([xb0-9])?([0-9])*"))) {
+    if(std::regex_match(idf,std::regex("^-?([0-9][x0-9])?([0-9a-f])*"))) {
         //if identifier is a number, it serves as the effective address/value
-        std::stringstream ss(idf);
-        sint effective_address;
-        ss >> effective_address;
+        sint effective_address = std::stoi(idf,0,0);
         result.address = effective_address;
         result.op_add = isValue ? Constants::VAL_ABSOLUTE : Constants::ADR_ABSOLUTE;
         result.valid = true;

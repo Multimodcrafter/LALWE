@@ -20,7 +20,7 @@ public:
     void warning(std::string message, sint value);
     void error(std::string message);
     void error(std::string message, sint value);
-    const int loglevel = 0;
+    const int loglevel = 1;
     static Logger* loggerInst;
 private:
     QObject* guiObject;

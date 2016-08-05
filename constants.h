@@ -98,11 +98,11 @@ public:
     static const int REG_FPT = 1 << 9;
 
     /** constants for flagpositions*/
-    static const int FLA_OVERFLOW = 1;
-    static const int FLA_SIGN = 1 << 1;
+    static const int FLA_OVERFLOW = 1 << 1;
+    static const int FLA_SIGN = 1 << 4;
     static const int FLA_ZERO = 1 << 2;
     static const int FLA_PARITY = 1 << 3;
-    static const int FLA_CARRY = 1 << 4;
+    static const int FLA_CARRY = 1;
 
     /** constants for comparison result*/
     static const int CMP_LESS = 0;

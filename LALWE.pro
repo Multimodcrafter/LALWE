@@ -34,6 +34,8 @@ HEADERS  += \
 
 CONFIG  += c++11
 
+RC_ICONS = Lalwe_icon.ico
+
 RESOURCES += \
     qml.qrc
 
