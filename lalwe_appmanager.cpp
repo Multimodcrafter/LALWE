@@ -58,6 +58,7 @@ void LALWE_AppManager::openProgramSlot(const QString &path) {
 void LALWE_AppManager::playProgramSlot() {
     if((!programRunning || programHandle.isFinished())&&(!assemblyRunning || assembleHandle.isFinished())) {
         setGuiProperty("status","Simulation running...");
+        Logger::loggerInst->info("Simulation started...");
         programRunning = true;
         programHandle = QtConcurrent::map(processor.begin(),processor.end(),[](Processor* p){ p->runProgram(); });
         animationTicker.start(Constants::ANIM_DELAY_MILIS);
@@ -81,7 +82,7 @@ void LALWE_AppManager::toggleRamHex(const bool &newState) {
 }
 
 void LALWE_AppManager::verifySlot(const QString &code) {
-
+    assembler->verify(code.toStdString());
 }
 
 void LALWE_AppManager::setCtxProperty(const QString &name, const QVariant &data) {

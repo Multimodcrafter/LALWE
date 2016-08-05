@@ -345,14 +345,14 @@ void Processor::runProgram() {
                     controller->setRegisterVal(Constants::REG_PC, value);
                 }
                 break;
-            case IN:
+            case RIN:
                 waitForInput = true;
                 while(waitForInput) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 }
                 controller->setRegisterVal(Constants::REG_IN, inputValue);
                 break;
-            case OUT:
+            case WOUT:
                 value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,false);
                 setEffectiveAddress(QVariant::fromValue(value).toString());
                 emit printLine("<p>Program output: " + QVariant::fromValue(value).toString() + "</p>");
@@ -365,6 +365,7 @@ void Processor::runProgram() {
     }
     setCycleState(-1);
     emit setGuiProperty("status","Ready");
+    Logger::loggerInst->info("Simulation done!");
 }
 
 RAM* Processor::getRam() {

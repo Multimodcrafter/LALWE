@@ -40,7 +40,7 @@ ApplicationWindow {
     property string decodedOpcode: "N/A"
     property string addressMode: "N/A"
     property string effectiveAddress: "N/A"
-    property string dynOutput: "<style>p{margin:0px}</style><p>Dynamic output</p>"
+    property string dynOutput: "<style>p{margin:0px}</style><p>Dynamic output:</p>"
     property string status: "Ready"
     property bool changesSaved: true
     onChangesSavedChanged: title = getTitle()
@@ -58,6 +58,11 @@ ApplicationWindow {
     signal changeAnimSpeed(real percentage)
     signal resetSimulation()
     signal sendInput(string text)
+
+    onStatusChanged: {
+        if(status == "Ready")
+        toggleAnimations(doAnimationsMenu.checked)
+    }
 
     onClosing: {
         if(!changesSaved) {
@@ -142,6 +147,9 @@ ApplicationWindow {
         }
         onDiscard: {
             continueWork(mode)
+        }
+        onHelp: {
+            Qt.openUrlExternally("https://github.com/Multimodcrafter/LALWE/wiki")
         }
         text: "You have made changes to your currently open program! Do you want to save those changes?"
         icon: StandardIcon.Warning
@@ -255,6 +263,15 @@ ApplicationWindow {
                 shortcut: "Ctrl+T"
                 onTriggered: assembleProgram(textArea1.text)
             }
+            MenuItem {
+                text: "Assemble program &without animations"
+                enabled: window1.status == "Ready"
+                shortcut: "Ctrl+Shift+T"
+                onTriggered: {
+                    toggleAnimations(false);
+                    assembleProgram(textArea1.text);
+                }
+            }
         }
 
         Menu {
@@ -281,6 +298,7 @@ ApplicationWindow {
             }
 
             MenuItem{
+                id: doAnimationsMenu
                 text: "Play &Animations"
                 checkable: true
                 checked: true

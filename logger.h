@@ -15,6 +15,7 @@ public:
     Logger(QObject& guiObject);
     void debug(std::string message);
     void debug(std::string message, sint value);
+    void info(std::string message);
     void warning(std::string message);
     void warning(std::string message, sint value);
     void error(std::string message);
