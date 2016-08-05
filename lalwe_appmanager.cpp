@@ -14,6 +14,7 @@ LALWE_AppManager::LALWE_AppManager(QQmlContext* ctxt, QObject* obj) {
     QObject::connect(&animationTicker,SIGNAL(timeout()), this, SIGNAL(stepAnimation()));
     QObject::connect(assembler, SIGNAL(assemblyDone()), this, SLOT(assemblyDone()));
     QObject::connect(obj,SIGNAL(toggleFollow(bool)),ram,SLOT(toggleFollowActive(bool)));
+    logger = new Logger(*obj);
 }
 
 void LALWE_AppManager::assembleSlot(const QString &code) {
@@ -34,7 +35,7 @@ void LALWE_AppManager::saveProgramSlot(const QString &code, const QString &path,
         QVariant arg = mode;
         QMetaObject::invokeMethod(guiObject, "continueWork",Q_ARG(QVariant,arg));
     } else {
-        Logger::error("File save failed! Path: " + path.toStdString());
+        Logger::loggerInst->error("File save failed! Path: " + path.toStdString());
     }
 }
 
@@ -50,7 +51,7 @@ void LALWE_AppManager::openProgramSlot(const QString &path) {
         QVariant arg = QString::fromStdString(code);
         QMetaObject::invokeMethod(guiObject, "getCodeFromFile", Q_ARG(QVariant,arg));
     } else {
-        Logger::error("File open failed! Path: " + path.toStdString());
+        Logger::loggerInst->error("File open failed! Path: " + path.toStdString());
     }
 }
 

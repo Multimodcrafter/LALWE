@@ -111,11 +111,19 @@ void Processor::runProgram() {
             case DIV:
                 value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,false);
                 setEffectiveAddress(QVariant::fromValue(value).toString());
+                if(value == 0) {
+                    Logger::loggerInst->error("Division by 0");
+                    return;
+                }
                 alu->divide(value);
                 break;
             case DIVI:
                 value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,true);
                 setEffectiveAddress(QVariant::fromValue(value).toString());
+                if(value == 0) {
+                    Logger::loggerInst->error("Division by 0");
+                    return;
+                }
                 alu->divide(value);
                 break;
             case MUL:
@@ -347,7 +355,7 @@ void Processor::runProgram() {
             case OUT:
                 value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,false);
                 setEffectiveAddress(QVariant::fromValue(value).toString());
-                emit printLine("Program output: " + QVariant::fromValue(value).toString());
+                emit printLine("<p>Program output: " + QVariant::fromValue(value).toString() + "</p>");
                 break;
         }
         controller->debugProcessor();

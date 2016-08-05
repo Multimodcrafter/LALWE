@@ -32,7 +32,7 @@ sint RAM::getValueAt(sint addr) {
         highlightCell(-1);
         return memory[addr];
     } else {
-        Logger::error("Address out of range.");
+        Logger::loggerInst->error("Address out of range.");
         return 0;
     }
 }
@@ -50,7 +50,7 @@ void RAM::setValueAt(sint addr, sint value) {
         }
         highlightCell(-1);
     } else {
-        Logger::error("Address out of range.");
+        Logger::loggerInst->error("Address out of range.");
     }
 }
 
@@ -78,7 +78,7 @@ void RAM::debugRam() {
         result += "\t";
         result += Constants::intToHex(memory[i + 112]);
     }
-    Logger::debug(result);
+    Logger::loggerInst->debug(result);
 }
 
 void RAM::toggleHexDisplay(bool newState) {

@@ -40,7 +40,7 @@ ApplicationWindow {
     property string decodedOpcode: "N/A"
     property string addressMode: "N/A"
     property string effectiveAddress: "N/A"
-    property string dynOutput: "Dynamic output:\n"
+    property string dynOutput: "<style>p{margin:0px}</style><p>Dynamic output</p>"
     property string status: "Ready"
     property bool changesSaved: true
     onChangesSavedChanged: title = getTitle()
@@ -70,7 +70,7 @@ ApplicationWindow {
     }
 
     function printLine(line) {
-        dynOutput += line + "\n";
+        textArea2.append(line);
     }
 
     function getTitle() {
@@ -245,11 +245,13 @@ ApplicationWindow {
             title: "&Assembler"
             MenuItem {
                 text: "&Verify program"
+                enabled: window1.status == "Ready"
                 shortcut: "Ctrl+I"
                 onTriggered: verifyProgram(textArea1.text)
             }
             MenuItem {
                 text: "&Assemble program"
+                enabled: window1.status == "Ready"
                 shortcut: "Ctrl+T"
                 onTriggered: assembleProgram(textArea1.text)
             }
@@ -259,6 +261,7 @@ ApplicationWindow {
             title:"&Simulation"
             MenuItem{
                 text: "&Start/Stop"
+                enabled: window1.status != "Assembling..."
                 shortcut: "F5"
                 onTriggered: {
                     playProgram()
@@ -610,6 +613,7 @@ ApplicationWindow {
         anchors.top: parent.top
         anchors.topMargin: 474
         readOnly: true
+        textFormat: TextEdit.RichText
     }
 
     TextField {

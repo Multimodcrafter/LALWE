@@ -3,6 +3,7 @@
 #include <QQmlContext>
 #include "assembler.h"
 #include "processor.h"
+#include "logger.h"
 #include <QFuture>
 #include <QtConcurrent>
 #include <iostream>
@@ -26,6 +27,7 @@ private:
     QFuture<void> assembleHandle;
     QTimer animationTicker;
     bool doAnimations;
+    Logger* logger;
 
 public slots:
     void assembleSlot(const QString &code);

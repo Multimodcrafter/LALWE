@@ -40,8 +40,8 @@ RESOURCES += \
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../stxxl-1.4.1/build/lib/release/ -lstxxl
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../stxxl-1.4.1/build/lib/debug/ -lstxxl
 
-INCLUDEPATH += $$PWD/../../stxxl-1.4.1/build/lib/Debug
-DEPENDPATH += $$PWD/../../stxxl-1.4.1/build/lib/Debug
+INCLUDEPATH += $$PWD/../../stxxl-1.4.1/build/include
+DEPENDPATH += $$PWD/../../stxxl-1.4.1/build/include
 
 win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../../stxxl-1.4.1/build/lib/release/libstxxl.a
 else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../../stxxl-1.4.1/build/lib/debug/libstxxl.a
