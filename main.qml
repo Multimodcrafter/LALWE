@@ -2,6 +2,7 @@ import QtQuick 2.5
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.3
 import QtQuick.Dialogs 1.2
+import QtQuick.Window 2.2
 
 ApplicationWindow {
     id: window1
@@ -39,7 +40,7 @@ ApplicationWindow {
     property string decodedOpcode: "N/A"
     property string addressMode: "N/A"
     property string effectiveAddress: "N/A"
-    property string dynOutput: "Dynamic output:\n"
+    property string dynOutput: "<style>p{margin:0px}</style><p>Dynamic output:</p>"
     property string status: "Ready"
     property bool changesSaved: true
     onChangesSavedChanged: title = getTitle()
@@ -58,6 +59,11 @@ ApplicationWindow {
     signal resetSimulation()
     signal sendInput(string text)
 
+    onStatusChanged: {
+        if(status == "Ready")
+        toggleAnimations(doAnimationsMenu.checked)
+    }
+
     onClosing: {
         if(!changesSaved) {
             saveDialog.mode = 3
@@ -69,7 +75,7 @@ ApplicationWindow {
     }
 
     function printLine(line) {
-        dynOutput += line + "\n";
+        textArea2.append(line);
     }
 
     function getTitle() {
@@ -142,8 +148,35 @@ ApplicationWindow {
         onDiscard: {
             continueWork(mode)
         }
+        onHelp: {
+            Qt.openUrlExternally("https://github.com/Multimodcrafter/LALWE/wiki")
+        }
         text: "You have made changes to your currently open program! Do you want to save those changes?"
         icon: StandardIcon.Warning
+    }
+
+    Window{
+        id: aboutDialog
+        title: "About LALWE..."
+        width: 300
+        minimumWidth: 300
+        maximumWidth: 300
+        height: 200
+        minimumHeight: 200
+        maximumHeight: 200
+        flags: Qt.Dialog | Qt.CustomizeWindowHint | Qt.WindowTitleHint
+        modality: Qt.ApplicationModal
+        Text{
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: 30
+            text: "LALWE - Learn Assembly Languages With Ease\n\nVersion: 1.0\nCreated with love by Robin Hänni\n\nLALWE is licensed under the GNU gpl v3\nLALWE uses the Qt and stxxl library"
+        }
+        Button{
+            text: "Ok"
+            y: 150
+            anchors.horizontalCenter: parent.horizontalCenter
+            onClicked: aboutDialog.close()
+        }
     }
 
     menuBar: MenuBar {
@@ -220,13 +253,24 @@ ApplicationWindow {
             title: "&Assembler"
             MenuItem {
                 text: "&Verify program"
+                enabled: window1.status == "Ready"
                 shortcut: "Ctrl+I"
                 onTriggered: verifyProgram(textArea1.text)
             }
             MenuItem {
                 text: "&Assemble program"
+                enabled: window1.status == "Ready"
                 shortcut: "Ctrl+T"
                 onTriggered: assembleProgram(textArea1.text)
+            }
+            MenuItem {
+                text: "Assemble program &without animations"
+                enabled: window1.status == "Ready"
+                shortcut: "Ctrl+Shift+T"
+                onTriggered: {
+                    toggleAnimations(false);
+                    assembleProgram(textArea1.text);
+                }
             }
         }
 
@@ -234,6 +278,7 @@ ApplicationWindow {
             title:"&Simulation"
             MenuItem{
                 text: "&Start/Stop"
+                enabled: window1.status != "Assembling..."
                 shortcut: "F5"
                 onTriggered: {
                     playProgram()
@@ -253,6 +298,7 @@ ApplicationWindow {
             }
 
             MenuItem{
+                id: doAnimationsMenu
                 text: "Play &Animations"
                 checkable: true
                 checked: true
@@ -307,9 +353,11 @@ ApplicationWindow {
             MenuItem{
                 text: "&Documentation..."
                 shortcut: "F1"
+                onTriggered: Qt.openUrlExternally("https://github.com/Multimodcrafter/LALWE/wiki")
             }
             MenuItem{
                 text: "&About LALWE..."
+                onTriggered: aboutDialog.visible = true;
             }
         }
     }
@@ -583,6 +631,7 @@ ApplicationWindow {
         anchors.top: parent.top
         anchors.topMargin: 474
         readOnly: true
+        textFormat: TextEdit.RichText
     }
 
     TextField {

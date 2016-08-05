@@ -1,5 +1,6 @@
 #include "alu.h"
 #include "constants.h"
+#include "logger.h"
 
 ALU::ALU(Controller* cont,QObject &appMgr) : controller(cont)
 {
@@ -14,55 +15,65 @@ void ALU::add(sint value) {
     setOperator("+");
     setArg(value);
     sint accval = controller->getRegisterVal(Constants::REG_ACC);
+    long long int precAccval = accval;
+    long long int precResult = precAccval + value;
+    sint result = accval + value;
     sint flag = 0;
-    if(accval + value == 0) flag += Constants::FLA_ZERO;
-    if(accval + value < 0) flag += Constants::FLA_SIGN;
-    if(this->countBits(accval + value) % 2 == 1) flag += Constants::FLA_PARITY;
-    if((accval > 0 && value > 0 && accval + value < 0) || (accval < 0 && value < 0 && accval + value > 0)) flag += Constants::FLA_OVERFLOW;
-    setResult(accval + value);
+    if(result == 0) flag += Constants::FLA_ZERO;
+    if(result < 0) flag += Constants::FLA_SIGN;
+    if(this->countBits(result) % 2 == 1) flag += Constants::FLA_PARITY;
+    flag += getOfCaFlags(result, precResult);
+    setResult(result);
     controller->setRegisterVal(Constants::REG_FLA,flag);
-    controller->setRegisterVal(Constants::REG_ACC, accval + value);
+    controller->setRegisterVal(Constants::REG_ACC, result);
 }
 
 void ALU::subtract(sint value) {
     setOperator("-");
     setArg(value);
     sint accval = controller->getRegisterVal(Constants::REG_ACC);
+    long long int precAccval = accval;
+    long long int precResult = precAccval - value;
+    sint result = accval - value;
     sint flag = 0;
-    if(accval - value == 0) flag += Constants::FLA_ZERO;
-    if(accval - value < 0) flag += Constants::FLA_SIGN;
-    if(this->countBits(accval - value) % 2 == 1) flag += Constants::FLA_PARITY;
-    if((accval < 0 && value > 0 && accval - value > 0) || (accval > 0 && value < 0 && accval - value < 0)) flag += Constants::FLA_OVERFLOW;
-    setResult(accval - value);
+    if(result == 0) flag += Constants::FLA_ZERO;
+    if(result < 0) flag += Constants::FLA_SIGN;
+    if(this->countBits(result) % 2 == 1) flag += Constants::FLA_PARITY;
+    flag += getOfCaFlags(result,precResult);
+    setResult(result);
     controller->setRegisterVal(Constants::REG_FLA,flag);
-    controller->setRegisterVal(Constants::REG_ACC, accval - value);
+    controller->setRegisterVal(Constants::REG_ACC, result);
 }
 
 void ALU::multiply(sint value) {
     setOperator("*");
     setArg(value);
     sint accval = controller->getRegisterVal(Constants::REG_ACC);
+    long long int precAccval = accval;
+    long long int precResult = precAccval * value;
+    sint result = accval * value;
     sint flag = 0;
-    if(accval * value == 0) flag += Constants::FLA_ZERO;
-    if(accval * value < 0) flag += Constants::FLA_SIGN;
-    if(this->countBits(accval * value) % 2 == 1) flag += Constants::FLA_PARITY;
-    if((((accval > 0 && value > 0) || (accval < 0 && value < 0)) && accval * value < 0) ||
-            (((accval > 0 && value < 0) || (accval < 0 && value > 0)) && accval * value > 0)) flag += Constants::FLA_OVERFLOW;
-    setResult(accval * value);
+    if(result == 0) flag += Constants::FLA_ZERO;
+    if(result < 0) flag += Constants::FLA_SIGN;
+    if(this->countBits(result) % 2 == 1) flag += Constants::FLA_PARITY;
+    flag += getOfCaFlags(result,precResult);
+    setResult(result);
     controller->setRegisterVal(Constants::REG_FLA,flag);
-    controller->setRegisterVal(Constants::REG_ACC, accval * value);
+    controller->setRegisterVal(Constants::REG_ACC, result);
 }
 
 void ALU::divide(sint value) {
     setOperator("/");
     setArg(value);
     sint accval = controller->getRegisterVal(Constants::REG_ACC);
+    long long int precAccval = accval;
+    long long int precResult = precAccval / value;
+    sint result = accval / value;
     sint flag = 0;
-    if(accval / value == 0) flag += Constants::FLA_ZERO;
-    if(accval / value < 0) flag += Constants::FLA_SIGN;
-    if(this->countBits(accval / value) % 2 == 1) flag += Constants::FLA_PARITY;
-    if((((accval > 0 && value > 0) || (accval < 0 && value < 0)) && accval / value < 0) ||
-            (((accval > 0 && value < 0) || (accval < 0 && value > 0)) && accval / value > 0)) flag += Constants::FLA_OVERFLOW;
+    if(result == 0) flag += Constants::FLA_ZERO;
+    if(result < 0) flag += Constants::FLA_SIGN;
+    if(this->countBits(result) % 2 == 1) flag += Constants::FLA_PARITY;
+    flag += getOfCaFlags(result, precResult);
     setResult(accval/value);
     controller->setRegisterVal(Constants::REG_FLA,flag);
     controller->setRegisterVal(Constants::REG_ACC, accval / value);
@@ -215,6 +226,20 @@ sint ALU::countBits(sint value) {
         if((value & (1 << i)) != 0) ++count;
     }
     return count;
+}
+
+sint ALU::getOfCaFlags(sint result, long long int realResult) {
+    sint flags = 0;
+    Logger::loggerInst->debug("Result: ", result);
+    Logger::loggerInst->debug("Real result: ", realResult);
+    if(realResult != result) {
+        flags += Constants::FLA_OVERFLOW;
+        long long int carrycheck = 1;
+        if(((carrycheck << 32) & realResult) != 0) {
+            flags += Constants::FLA_CARRY;
+        }
+    }
+    return flags;
 }
 
 void ALU::stepAnimation() {

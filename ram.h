@@ -4,7 +4,10 @@
 #include <string>
 #include <QObject>
 #include <QEventLoop>
+#include <stxxl/vector>
 #define sint int32_t
+
+typedef stxxl::VECTOR_GENERATOR<sint>::result vector;
 
 class RAM : public QObject
 {
@@ -36,7 +39,7 @@ public:
     void reset();
 
 private:
-    sint* memory;
+    vector memory;
     sint addressView1;
     sint addressView2;
     bool formatHex;

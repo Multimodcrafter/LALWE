@@ -18,6 +18,8 @@ public:
 
     /** Assembles the code into the RAM*/
     void assemble(std::string code, RAM* mem);
+
+    void verify(std::string code);
     /** Disassembles the RAM and returns the code*/
     std::string disassemble(RAM* mem);
 

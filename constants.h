@@ -57,8 +57,8 @@
 #define JNZ 0x2F0
 #define JS 0x300
 #define JNS 0x310
-#define IN 0x320
-#define OUT 0x330
+#define RIN 0x320
+#define WOUT 0x330
 
 class Constants
 {
@@ -73,12 +73,12 @@ public:
     static const std::set<std::string> ASSEMBLY_INST;
 
     /** constants used to determine if a numeric value is a variable, register or parameter*/
-    static const int ADR_ABSOLUTE = 0;
+    static const int ADR_ABSOLUTE = 5;
     static const int ADR_GLOBAL = 1;
     static const int ADR_LOCAL = 2;
     static const int ADR_REG = 3;
     static const int ADR_PARAMETER = 4;
-    static const int VAL_ABSOLUTE = 5;
+    static const int VAL_ABSOLUTE = 0;
     static const int VAL_GLOBAL = 6;
     static const int VAL_LOCAL = 7;
     static const int VAL_REG = 9;
@@ -98,11 +98,11 @@ public:
     static const int REG_FPT = 1 << 9;
 
     /** constants for flagpositions*/
-    static const int FLA_OVERFLOW = 1;
-    static const int FLA_SIGN = 1 << 1;
+    static const int FLA_OVERFLOW = 1 << 1;
+    static const int FLA_SIGN = 1 << 4;
     static const int FLA_ZERO = 1 << 2;
     static const int FLA_PARITY = 1 << 3;
-    static const int FLA_CARRY = 1 << 4;
+    static const int FLA_CARRY = 1;
 
     /** constants for comparison result*/
     static const int CMP_LESS = 0;
@@ -124,6 +124,8 @@ public:
     }
 
     static const int RAM_VIEW_CELL_AMOUNT = 20;
+
+    static long long int ARRAYSIZE;
 
     /** getter for the dissassembly*/
     static std::string getMnemonic(sint opcode);

@@ -52,6 +52,8 @@ private:
 
     sint countBits(sint value);
 
+    sint getOfCaFlags(sint result, long long int realResult);
+
 public slots:
     void stepAnimation();
 };

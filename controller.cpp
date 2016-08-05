@@ -31,7 +31,7 @@ sint Controller::getRegisterVal(sint reg) {
     for(int i = 0; i <= 10; ++i) {
         if((reg & (1 << i)) != 0) return registers.at(i)->getValue();
     }
-    Logger::error("Inexistent register dereferenced.");
+    Logger::loggerInst->error("Inexistent register dereferenced!");
     return 0;
 }
 
@@ -39,9 +39,10 @@ void Controller::setRegisterVal(sint reg, sint val) {
     for(int i = 0; i <= 10; ++i) {
         if((reg & (1 << i)) != 0) {
             registers.at(i)->setValue(val);
-            break;
+            return;
         }
     }
+    Logger::loggerInst->error("Inexistent register dereferenced!");
 }
 
 void Controller::decRegister(sint reg) {
@@ -49,9 +50,10 @@ void Controller::decRegister(sint reg) {
         if((reg & (1 << i)) != 0) {
             sint val = registers.at(i)->getValue();
             registers.at(i)->setValue(val - 1);
-            break;
+            return;
         }
     }
+    Logger::loggerInst->error("Inexistent register dereferenced!");
 }
 
 void Controller::incRegister(sint reg) {
@@ -59,9 +61,10 @@ void Controller::incRegister(sint reg) {
         if((reg & (1 << i)) != 0) {
             sint val = registers.at(i)->getValue();
             registers.at(i)->setValue(val + 1);
-            break;
+            return;
         }
     }
+    Logger::loggerInst->error("Inexistent register dereferenced!");
 }
 
 void Controller::negRegister(sint reg) {
@@ -69,9 +72,10 @@ void Controller::negRegister(sint reg) {
         if((reg & (1 << i)) != 0) {
             sint val = registers.at(i)->getValue();
             registers.at(i)->setValue(-val);
-            break;
+            return;
         }
     }
+    Logger::loggerInst->error("Inexistent register dereferenced!");
 }
 
 void Controller::notRegister(sint reg) {
@@ -79,9 +83,10 @@ void Controller::notRegister(sint reg) {
         if((reg & (1 << i)) != 0) {
             sint val = registers.at(i)->getValue();
             registers.at(i)->setValue(~val);
-            break;
+            return;
         }
     }
+    Logger::loggerInst->error("Inexistent register dereferenced!");
 }
 
 void Controller::setLastCmp(int result) {
@@ -254,7 +259,7 @@ void Controller::returnFunction() {
 }
 
 void Controller::debugProcessor() {
-    if(Logger::loglevel == 0) {
+    if(Logger::loggerInst->loglevel == 0) {
         ram->debugRam();
         std::stringstream ss;
         ss << "Registers:" << std::endl;
@@ -263,7 +268,7 @@ void Controller::debugProcessor() {
         ss << "IND2: " << Constants::intToHex(registers[6]->getValue()) << "\tIN: " << registers[7]->getValue() << "\tDPT: " << registers[8]->getValue() << std::endl;
         ss << "SPT: " << Constants::intToHex(registers[9]->getValue()) << "\tFPT: " << Constants::intToHex(registers[10]->getValue()) << std::endl;
 
-        Logger::debug(ss.str());
+        Logger::loggerInst->debug(ss.str());
     }
 }
 
