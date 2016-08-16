@@ -11,49 +11,49 @@ Logger::Logger(QObject& guiObject)
 }
 
 void Logger::debug(std::string message) {
-    if(Logger::loglevel <= 0) {
+    if(Logger::loglevel <= 1) {
         std::cout << "Debug: " << message << std::endl;
-        printLn(QString::fromStdString("<p style=\"color:blue\">Debug: " + message + "</p>"));
+        if(Logger::loglevel <= 0) printLn(QString::fromStdString("<p style=\"color:blue\">Debug: " + message + "</p>"));
     }
 }
 
 void Logger::debug(std::string message, sint value) {
-    if(Logger::loglevel <= 0) {
+    if(Logger::loglevel <= 1) {
         std::cout << "Debug: " << message << value << std::endl;
-        printLn(QString::fromStdString("<p style=\"color:blue\">Debug: " + message) + QVariant::fromValue(value).toString() + "</p>");
+        if(Logger::loglevel <= 0) printLn(QString::fromStdString("<p style=\"color:blue\">Debug: " + message) + QVariant::fromValue(value).toString() + "</p>");
     }
 }
 
 void Logger::info(std::string message) {
-    if(Logger::loglevel <= 1) {
+    if(Logger::loglevel <= 2) {
         std::cout << "Info: " << message << std::endl;
         printLn(QString::fromStdString("<p style=\"color:green\">Info: " + message + "</p>"));
     }
 }
 
 void Logger::warning(std::string message) {
-    if(Logger::loglevel <= 2) {
+    if(Logger::loglevel <= 3) {
         std::cout << "Warning: " << message << std::endl;
         printLn(QString::fromStdString("<p style=\"color:#ffaa00\">Warning: " + message + "</p>"));
     }
 }
 
 void Logger::warning(std::string message, sint value) {
-    if(Logger::loglevel <= 2) {
+    if(Logger::loglevel <= 3) {
         std::cout << "Warning: " << message << value << std::endl;
         printLn(QString::fromStdString("<p style=\"color:#ffaa00\">Warning: " + message) + QVariant::fromValue(value).toString() + "</p>");
     }
 }
 
 void Logger::error(std::string message) {
-    if(Logger::loglevel <= 3) {
+    if(Logger::loglevel <= 4) {
         std::cerr << "Error: " << message << std::endl;
         printLn(QString::fromStdString("<p style=\"color:red\">Error: " + message + "</p>"));
     }
 }
 
 void Logger::error(std::string message, sint value) {
-    if(Logger::loglevel <= 3) {
+    if(Logger::loglevel <= 4) {
         std::cerr << "Error: " << message << value << std::endl;
         printLn(QString::fromStdString("<p style=\"color:red\">Error: " + message) + QVariant::fromValue(value).toString() + "</p>");
     }

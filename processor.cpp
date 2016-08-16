@@ -55,6 +55,7 @@ void Processor::runProgram() {
             case HLT:
                 setEffectiveAddress("N/A");
                 emit setGuiProperty("addressMode",QVariant::fromValue(QString("N/A")));
+                emit setGuiProperty("status","Ready");
                 setCycleState(-1);
                 return; //program should terminate -> exit the execution procedure
             case CALL:
@@ -342,6 +343,22 @@ void Processor::runProgram() {
                 setEffectiveAddress(QVariant::fromValue(value).toString());
                 cmpResult = controller->getRegisterVal(Constants::REG_FLA);
                 if((cmpResult & Constants::FLA_SIGN) == 0) {
+                    controller->setRegisterVal(Constants::REG_PC, value);
+                }
+                break;
+            case JC:
+                value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,false);
+                setEffectiveAddress(QVariant::fromValue(value).toString());
+                cmpResult = controller->getRegisterVal(Constants::REG_FLA);
+                if((cmpResult & Constants::FLA_CARRY) != 0) {
+                    controller->setRegisterVal(Constants::REG_PC, value);
+                }
+                break;
+            case JNC:
+                value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,false);
+                setEffectiveAddress(QVariant::fromValue(value).toString());
+                cmpResult = controller->getRegisterVal(Constants::REG_FLA);
+                if((cmpResult & Constants::FLA_CARRY) == 0) {
                     controller->setRegisterVal(Constants::REG_PC, value);
                 }
                 break;

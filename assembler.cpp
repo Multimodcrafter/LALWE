@@ -29,11 +29,11 @@ void Assembler::assemble(std::string code, RAM* mem) {
         //increase addresspointer apropriately
         if(words.size() > 0 && words.at(0) == "call") address += words.size() * 2 - 1; //function call requires two (OP_Code + Argument) + 2 times #parameters + one (function address) memory slots
         else if(words.size() > 0
-                && Constants::ASSEMBLY_INST.find(words.at(0)) == Constants::ASSEMBLY_INST.end()) address += 2; //normal op code requires two memory slots (OP-Code + Argument)
+                && Constants::ASSEMBLY_INST.find(words.at(0)) == Constants::ASSEMBLY_INST.end()
+                && Constants::OP_CODES.find(words.at(0)) != Constants::OP_CODES.end()) address += 2; //normal op code requires two memory slots (OP-Code + Argument)
 
         //current subroutine definition
         bool isFunctionDef = false;
-        bool isLabel = false;
         sint paramcount = -1;
         std::string name = "";
         subroutine s;
@@ -59,10 +59,8 @@ void Assembler::assemble(std::string code, RAM* mem) {
                         return;
                     } //error: invalid identifier!!
                 }
-            } else if(w == ":") {
-                isLabel = true; //current line is a label def
-            } else if(isLabel) {
-                varbel_names.insert(std::make_pair(w,address + 2));
+            } else if(w.at(0) == ':') {
+                varbel_names.insert(std::make_pair(w.substr(1),address + 2));
             } else break; //current line doesn't contain a function def or label
             Logger::loggerInst->debug(w);
         }
@@ -142,8 +140,8 @@ void Assembler::assemble(std::string code, RAM* mem) {
                     varbel_names.insert(std::make_pair(words.at(1),address + 1));
                 } else break;*/
             } else {
-                if(words.at(0).at(0) == '#') {
-                    continue; //line is a comment -> continue with next line
+                if(words.at(0).at(0) == '#' || words.at(0).at(0) == ':') {
+                    continue; //line is a comment/label -> continue with next line
                 } else if(words.at(0) == "call") {
                     if(words.size() > 1) {
                         if(subroutines.find(words.at(1)) != subroutines.end()) {
@@ -240,7 +238,8 @@ void Assembler::assemble(std::string code, RAM* mem) {
         //increase addresspointer apropriately
         if(words.size() > 0 && words.at(0) == "call") address += words.size() * 2 - 1; //function call requires two (OP_Code + Argument) + 2 times #parameters + one (function address) memory slots
         else if(words.size() > 0
-                && Constants::ASSEMBLY_INST.find(words.at(0)) == Constants::ASSEMBLY_INST.end()) address += 2; //normal op code requires two memory slots (OP-Code + Argument)
+                && Constants::ASSEMBLY_INST.find(words.at(0)) == Constants::ASSEMBLY_INST.end()
+                && Constants::OP_CODES.find(words.at(0)) != Constants::OP_CODES.end()) address += 2; //normal op code requires two memory slots (OP-Code + Argument)
     }
     mem->setValueAt(1,address + 1); //set the value the datapointer should be set to
     Logger::loggerInst->info("Assembly process done!");
@@ -262,11 +261,11 @@ void Assembler::verify(std::string code) {
         //increase addresspointer apropriately
         if(words.size() > 0 && words.at(0) == "call") address += words.size() * 2 - 1; //function call requires two (OP_Code + Argument) + 2 times #parameters + one (function address) memory slots
         else if(words.size() > 0
-                && Constants::ASSEMBLY_INST.find(words.at(0)) == Constants::ASSEMBLY_INST.end()) address += 2; //normal op code requires two memory slots (OP-Code + Argument)
+                && Constants::ASSEMBLY_INST.find(words.at(0)) == Constants::ASSEMBLY_INST.end()
+                && Constants::OP_CODES.find(words.at(0)) != Constants::OP_CODES.end()) address += 2; //normal op code requires two memory slots (OP-Code + Argument)
 
         //current subroutine definition
         bool isFunctionDef = false;
-        bool isLabel = false;
         sint paramcount = -1;
         std::string name = "";
         subroutine s;
@@ -282,10 +281,8 @@ void Assembler::verify(std::string code) {
                     ++paramcount;
                     if(checkIdentifier(w)) s.param_names.insert(std::make_pair(w,paramcount)); //map param_name to position of parameter
                 }
-            } else if(w == ":") {
-                isLabel = true; //current line is a label def
-            } else if(isLabel) {
-                varbel_names.insert(std::make_pair(w,address + 2));
+            } else if(w.at(0) == ':') {
+                varbel_names.insert(std::make_pair(w.substr(1),address + 2));
             } else break; //current line doesn't contain a function def or label
         }
         if(paramcount > -1) { //curent line was a function def
@@ -338,8 +335,8 @@ void Assembler::verify(std::string code) {
                 curr_s_name = words.at(1);
             } else if(words.at(0) == "entrypoint") {
             } else {
-                if(words.at(0).at(0) == '#') {
-                    continue; //line is a comment -> continue with next line
+                if(words.at(0).at(0) == '#' || words.at(0).at(0) == ':') {
+                    continue; //line is a comment/label -> continue with next line
                 } else if(words.at(0) == "call") {
                     if(words.size() > 1) {
                         if(subroutines.find(words.at(1)) != subroutines.end()) {
@@ -392,7 +389,8 @@ void Assembler::verify(std::string code) {
         //increase addresspointer apropriately
         if(words.size() > 0 && words.at(0) == "call") address += words.size() * 2 - 1; //function call requires two (OP_Code + Argument) + 2 times #parameters + one (function address) memory slots
         else if(words.size() > 0
-                && Constants::ASSEMBLY_INST.find(words.at(0)) == Constants::ASSEMBLY_INST.end()) address += 2; //normal op code requires two memory slots (OP-Code + Argument)
+                && Constants::ASSEMBLY_INST.find(words.at(0)) == Constants::ASSEMBLY_INST.end()
+                && Constants::OP_CODES.find(words.at(0)) != Constants::OP_CODES.end()) address += 2; //normal op code requires two memory slots (OP-Code + Argument)
     }
     Logger::loggerInst->info("Code verification done! If no error messages showed up, your code(-syntax) should be fine.");
 }
@@ -434,27 +432,52 @@ Assembler::addressCompound Assembler::getAddress(std::string idf, int state, std
     Logger::loggerInst->debug("Processing identifier: " + idf);
     addressCompound result;
     result.valid = false;
-    bool isValue = idf[0] != '&';
-    idf = isValue ? idf : idf.substr(1);
-    if(std::regex_match(idf,std::regex("^-?([0-9][x0-9])?([0-9a-f])*"))) {
+    bool isValue = idf[0] == '*';
+    idf = isValue ? idf.substr(1) : idf;
+    if(std::regex_match(idf,std::regex("^-?[0-9]+")) || std::regex_match(idf,std::regex("^-?0x[a-f0-9]+"))) {
         //if identifier is a number, it serves as the effective address/value
+        Logger::loggerInst->debug("Identifier is numeric, absolute");
         sint effective_address = std::stoi(idf,0,0);
         result.address = effective_address;
-        result.op_add = isValue ? Constants::VAL_ABSOLUTE : Constants::ADR_ABSOLUTE;
+        result.op_add = isValue ? Constants::ADR_ABSOLUTE : Constants::VAL_ABSOLUTE;
         result.valid = true;
     } else if(idf.find('[') != std::string::npos) {
+        Logger::loggerInst->debug("Identifier is numeric, relative");
         std::string actual_idf = idf.substr(4,idf.find(']') - 4);
         std::string type = idf.substr(0,3);
-        bool numeric = isNumeric(actual_idf) > -1;
-        if(state == 1 && (type == "loc" || type == "par")) {
-            //if state is 1, local variables and parameters overwrite global ones
-            subroutine* s = &subroutines.at(sub);
-            if(type == "loc" && (s->local_var_names.find(actual_idf) != s->local_var_names.end() || numeric)) {
-                result.address = numeric ? isNumeric(actual_idf) : s->local_var_names.at(actual_idf);
+        sint number = isNumeric(actual_idf);
+        bool numeric = number > -1;
+        if(numeric) {
+            result.address = number;
+            if(state == 1 && type == "loc") {
                 result.op_add = isValue ? Constants::VAL_LOCAL : Constants::ADR_LOCAL;
                 result.valid = true;
-            } else if(type == "par" && (s->param_names.find(actual_idf) != s->param_names.end() || numeric)) {
-                result.address = numeric ? isNumeric(actual_idf) : s->param_names.at(actual_idf);
+            } else if(state == 1 && type == "par") {
+                result.op_add = isValue ? Constants::VAL_PARAMETER : Constants::ADR_PARAMETER;
+                result.valid = true;
+            } else if(type == "dpt") {
+                result.op_add = isValue ? Constants::VAL_GLOBAL : Constants::ADR_GLOBAL;
+                result.valid = true;
+            } else {
+                Logger::loggerInst->error("Badly formated or misplaced identifier: " + idf);
+                return result;
+            }
+        } else {
+            Logger::loggerInst->error("Badly formated identifier: " + idf);
+            return result;
+        }
+    } else {
+        Logger::loggerInst->debug("Identifier is a name");
+        std::string actual_idf = idf[0] == ':' ? idf.substr(1) : idf;
+        if(state == 1) {
+            //if state is 1, local variables and parameters overwrite global ones
+            subroutine* s = &subroutines.at(sub);
+            if(s->local_var_names.find(actual_idf) != s->local_var_names.end()) {
+                result.address = s->local_var_names.at(actual_idf);
+                result.op_add = isValue ? Constants::VAL_LOCAL : Constants::ADR_LOCAL;
+                result.valid = true;
+            } else if(s->param_names.find(actual_idf) != s->param_names.end()) {
+                result.address = s->param_names.at(actual_idf);
                 result.op_add = isValue ? Constants::VAL_PARAMETER : Constants::ADR_PARAMETER;
                 result.valid = true;
             }
@@ -462,31 +485,27 @@ Assembler::addressCompound Assembler::getAddress(std::string idf, int state, std
         if(!result.valid) {
             //if state is 0 only global variables and label names are visible
             //if state is 1 and no local variables and parameters are found, global ones are searched instead
-            if((type == "dpt" || type == "lab") && (varbel_names.find(actual_idf) != varbel_names.end() || numeric)) {
-                result.address = numeric ? isNumeric(actual_idf) : varbel_names.at(actual_idf);
+            if(varbel_names.find(actual_idf) != varbel_names.end()) {
+                result.address = varbel_names.at(actual_idf);
                 result.op_add = isValue ? Constants::VAL_GLOBAL : Constants::ADR_GLOBAL;
-                result.op_add = type == "lab" ? Constants::VAL_ABSOLUTE : result.op_add;
+                result.op_add = idf.at(0) == ':' ? Constants::VAL_ABSOLUTE : result.op_add;
                 result.valid = true;
-            } else if(type == "reg" && (Constants::REG_NAMES.find(actual_idf) != Constants::REG_NAMES.end() || numeric)) {
-                result.address = numeric ? isNumeric(actual_idf) : Constants::REG_NAMES.at(actual_idf);
+            } else if(Constants::REG_NAMES.find(actual_idf) != Constants::REG_NAMES.end()) {
+                result.address = Constants::REG_NAMES.at(actual_idf);
                 result.op_add = isValue ? Constants::VAL_REG : Constants::ADR_REG;
                 result.valid = true;
             } else {
                 Logger::loggerInst->error("Undefined identifier: " + idf); //identifier has not been defined (yet)!
             }
         }
-    } else {
-        Logger::loggerInst->error("Badly formated identifier: " + idf);
     }
     Logger::loggerInst->debug("Found address: ", result.address);
     return result;
 }
 
 sint Assembler::isNumeric(std::string idf) {
-    if(std::regex_match(idf,std::regex("^[0-9]([xb0-9])?([0-9])*"))) {
-        std::stringstream ss(idf);
-        sint effective_address;
-        ss >> effective_address;
+    if(std::regex_match(idf,std::regex("^-?[0-9]+")) || std::regex_match(idf,std::regex("^-?0x[a-f0-9]+"))) {
+        sint effective_address = std::stoi(idf,0,0);;
         return effective_address;
     }
     return -1;
