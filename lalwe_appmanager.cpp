@@ -75,6 +75,12 @@ void LALWE_AppManager::playProgramSlot() {
 
 void LALWE_AppManager::toggleAnimationsSlot(const bool &newState) {
     processor.at(0)->toggleAnimations(newState);
+    if(!newState) {
+        animationTicker.stop();
+        emit stepAnimation();
+    } else if((programRunning && programHandle.isRunning()) || (assemblyRunning && assembleHandle.isRunning())) {
+        animationTicker.start(Constants::ANIM_DELAY_MILIS);
+    }
 }
 
 void LALWE_AppManager::toggleRamHex(const bool &newState) {
@@ -107,6 +113,7 @@ void LALWE_AppManager::windowClosing() {
         processor.at(0)->toggleAnimations(false);
     }
     emit stepAnimation();
+    processor.at(0)->requestTermination();
 }
 
 void LALWE_AppManager::ramViewAddressChanged(const int &index, const QString &action) {
