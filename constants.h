@@ -57,8 +57,10 @@
 #define JNZ 0x2F0
 #define JS 0x300
 #define JNS 0x310
-#define RIN 0x320
-#define WOUT 0x330
+#define JC 0x320
+#define JNC 0x330
+#define RIN 0x340
+#define WOUT 0x350
 
 class Constants
 {

@@ -56,6 +56,8 @@ const std::map<std::string,const sint> Constants::OP_CODES = {
     {"jnz",JNZ},
     {"js",JS},
     {"jns",JNS},
+    {"jc",JC},
+    {"jnc",JNC},
     {"in",RIN},
     {"out",WOUT},
 };

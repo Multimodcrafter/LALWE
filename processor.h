@@ -23,6 +23,8 @@ public:
 
     void sendInput(sint value);
 
+    void requestTermination();
+
 private:
     Controller* controller;
 
@@ -30,6 +32,7 @@ private:
     bool continueAnim;
     bool idle;
     bool waitForInput;
+    bool sigTerm;
     sint inputValue;
 
     ALU* alu;

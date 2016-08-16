@@ -13,6 +13,7 @@ Processor::Processor(QObject &appMgr)
     continueAnim = false;
     idle = false;
     waitForInput = false;
+    sigTerm = false;
     QObject::connect(this, SIGNAL(setGuiProperty(QString,QVariant)), &appMgr, SLOT(setGuiProperty(QString,QVariant)));
     QObject::connect(&appMgr, SIGNAL(stepAnimation()), this, SLOT(stepAnimation()));
     QObject::connect(this, SIGNAL(printLine(QString)), &appMgr, SLOT(printLine(QString)));
@@ -32,6 +33,7 @@ void Processor::runProgram() {
         sint value = 0;
         sint cmpResult = 0;
         setCycleState(2);
+        if(sigTerm) normalized_inst = HLT;
         switch(normalized_inst) {
             case MOV:
             {
@@ -55,7 +57,9 @@ void Processor::runProgram() {
             case HLT:
                 setEffectiveAddress("N/A");
                 emit setGuiProperty("addressMode",QVariant::fromValue(QString("N/A")));
+                emit setGuiProperty("status","Ready");
                 setCycleState(-1);
+                Logger::loggerInst->info("Simulation done!");
                 return; //program should terminate -> exit the execution procedure
             case CALL:
                 setEffectiveAddress("N/A");
@@ -345,11 +349,29 @@ void Processor::runProgram() {
                     controller->setRegisterVal(Constants::REG_PC, value);
                 }
                 break;
+            case JC:
+                value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,false);
+                setEffectiveAddress(QVariant::fromValue(value).toString());
+                cmpResult = controller->getRegisterVal(Constants::REG_FLA);
+                if((cmpResult & Constants::FLA_CARRY) != 0) {
+                    controller->setRegisterVal(Constants::REG_PC, value);
+                }
+                break;
+            case JNC:
+                value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,false);
+                setEffectiveAddress(QVariant::fromValue(value).toString());
+                cmpResult = controller->getRegisterVal(Constants::REG_FLA);
+                if((cmpResult & Constants::FLA_CARRY) == 0) {
+                    controller->setRegisterVal(Constants::REG_PC, value);
+                }
+                break;
             case RIN:
                 waitForInput = true;
-                while(waitForInput) {
+                setGuiProperty("status","Waiting for user input...");
+                while(waitForInput && !sigTerm) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 }
+                setGuiProperty("status","Simulation running...");
                 controller->setRegisterVal(Constants::REG_IN, inputValue);
                 break;
             case WOUT:
@@ -383,9 +405,7 @@ void Processor::reset() {
 }
 
 void Processor::setCycleState(int state) {
-    if(doAnimations) {
-        emit setGuiProperty("cycleState",QVariant::fromValue(state));
-    }
+    emit setGuiProperty("cycleState",QVariant::fromValue(state));
     sleep
 }
 
@@ -406,4 +426,13 @@ void Processor::stepAnimation() {
 void Processor::sendInput(sint value) {
     inputValue = value;
     waitForInput = false;
+}
+
+void Processor::requestTermination() {
+    sigTerm = true;
+    idle = false;
+    continueAnim = true;
+    waitForInput = false;
+    doAnimations = false;
+    inputValue = 1;
 }
