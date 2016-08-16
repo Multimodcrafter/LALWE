@@ -13,6 +13,7 @@ Processor::Processor(QObject &appMgr)
     continueAnim = false;
     idle = false;
     waitForInput = false;
+    sigTerm = false;
     QObject::connect(this, SIGNAL(setGuiProperty(QString,QVariant)), &appMgr, SLOT(setGuiProperty(QString,QVariant)));
     QObject::connect(&appMgr, SIGNAL(stepAnimation()), this, SLOT(stepAnimation()));
     QObject::connect(this, SIGNAL(printLine(QString)), &appMgr, SLOT(printLine(QString)));
@@ -32,6 +33,7 @@ void Processor::runProgram() {
         sint value = 0;
         sint cmpResult = 0;
         setCycleState(2);
+        if(sigTerm) normalized_inst = HLT;
         switch(normalized_inst) {
             case MOV:
             {
@@ -57,6 +59,7 @@ void Processor::runProgram() {
                 emit setGuiProperty("addressMode",QVariant::fromValue(QString("N/A")));
                 emit setGuiProperty("status","Ready");
                 setCycleState(-1);
+                Logger::loggerInst->info("Simulation done!");
                 return; //program should terminate -> exit the execution procedure
             case CALL:
                 setEffectiveAddress("N/A");
@@ -364,9 +367,11 @@ void Processor::runProgram() {
                 break;
             case RIN:
                 waitForInput = true;
-                while(waitForInput) {
+                setGuiProperty("status","Waiting for user input...");
+                while(waitForInput && !sigTerm) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 }
+                setGuiProperty("status","Simulation running...");
                 controller->setRegisterVal(Constants::REG_IN, inputValue);
                 break;
             case WOUT:
@@ -400,9 +405,7 @@ void Processor::reset() {
 }
 
 void Processor::setCycleState(int state) {
-    if(doAnimations) {
-        emit setGuiProperty("cycleState",QVariant::fromValue(state));
-    }
+    emit setGuiProperty("cycleState",QVariant::fromValue(state));
     sleep
 }
 
@@ -423,4 +426,13 @@ void Processor::stepAnimation() {
 void Processor::sendInput(sint value) {
     inputValue = value;
     waitForInput = false;
+}
+
+void Processor::requestTermination() {
+    sigTerm = true;
+    idle = false;
+    continueAnim = true;
+    waitForInput = false;
+    doAnimations = false;
+    inputValue = 1;
 }
