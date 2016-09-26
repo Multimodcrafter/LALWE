@@ -36,6 +36,10 @@ CONFIG  += c++11
 
 RC_ICONS = Lalwe_icon.ico
 
+VERSION = 1.1
+
+DEFINES += APP_VERSION=\\\"$$VERSION\\\"
+
 RESOURCES += \
     qml.qrc
 

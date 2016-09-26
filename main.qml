@@ -169,7 +169,7 @@ ApplicationWindow {
         Text{
             anchors.horizontalCenter: parent.horizontalCenter
             y: 30
-            text: "LALWE - Learn Assembly Languages With Ease\n\nVersion: 1.0\nCreated with love by Robin Hänni\n\nLALWE is licensed under the GNU gpl v3\nLALWE uses the Qt and stxxl library"
+            text: "LALWE - Learn Assembly Languages With Ease\n\nVersion: " + APP_VERSION + "\nCreated with love by Robin Hänni\n\nLALWE is licensed under the GNU gpl v3\nLALWE uses the Qt and stxxl library"
         }
         Button{
             text: "Ok"
