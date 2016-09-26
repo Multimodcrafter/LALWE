@@ -11,6 +11,8 @@ Item {
     property alias textField1: textField1
     property var rAMmodel
     property int activeIndex: 0
+    property int fpIndex: -1
+    property int spIndex: -1
     property int lastactiveIndex: 0
 
     onActiveIndexChanged: {
@@ -85,14 +87,14 @@ Item {
                 textField1.focus = false
             }
             Rectangle{
-                color: index == item1.activeIndex ? "#ff4444" : (index % 2 == 0 ? "#B7F7FD" : "#B7E3FD")
+                color: index == item1.activeIndex ? "#ff4444" : (index == item1.fpIndex ? "#AA00FF" : (index == item1.spIndex ? "#00D500" : (index % 2 == 0 ? "#B7F7FD" : "#B7E3FD")))
                 anchors.fill: parent
                 Text {
                     text: modelData
                     anchors.fill: parent
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignLeft
-                    font.bold: wrapper.ListView.isCurrentItem || index == item1.activeIndex
+                    font.bold: index == item1.activeIndex
                 }
             }
         }
@@ -121,10 +123,4 @@ Item {
         anchors.leftMargin: 3
         anchors.right: parent.right
     }
-
-
-
-
-
-
 }

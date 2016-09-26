@@ -18,6 +18,9 @@ ApplicationWindow {
     property var ramModel2: myModel2
     property int activeRamSlot1: -1
     property int activeRamSlot2: -1
+    property int addressRam1: 0
+    property int addressRam2: 0
+    property int ramViewCellAmmount: 0
     property int activeRegister: -1
     property bool aluActive: false
     property bool busToAluActive: false
@@ -59,6 +62,30 @@ ApplicationWindow {
     signal resetSimulation()
     signal sendInput(string text)
 
+    onAddressRam1Changed: {
+        rAMView1.fpIndex = window1.fpt - window1.addressRam1 >= 0 && window1.fpt - window1.addressRam1 < window1.ramViewCellAmmount ? window1.fpt - window1.addressRam1 : -1
+        rAMView1.spIndex = window1.spt - window1.addressRam1 >= 0 && window1.spt - window1.addressRam1 < window1.ramViewCellAmmount ? window1.spt - window1.addressRam1 : -1
+    }
+
+    onAddressRam2Changed: {
+        rAMView2.fpIndex = window1.fpt - window1.addressRam2 >= 0 && window1.fpt - window1.addressRam2 < window1.ramViewCellAmmount ? window1.fpt - window1.addressRam2 : -1
+        rAMView2.spIndex = window1.spt - window1.addressRam2 >= 0 && window1.spt - window1.addressRam2 < window1.ramViewCellAmmount ? window1.spt - window1.addressRam2 : -1
+    }
+
+    onFptChanged: {
+        rAMView1.fpIndex = window1.fpt - window1.addressRam1 >= 0 && window1.fpt - window1.addressRam1 < window1.ramViewCellAmmount ? window1.fpt - window1.addressRam1 : -1
+        rAMView1.spIndex = window1.spt - window1.addressRam1 >= 0 && window1.spt - window1.addressRam1 < window1.ramViewCellAmmount ? window1.spt - window1.addressRam1 : -1
+        rAMView2.fpIndex = window1.fpt - window1.addressRam2 >= 0 && window1.fpt - window1.addressRam2 < window1.ramViewCellAmmount ? window1.fpt - window1.addressRam2 : -1
+        rAMView2.spIndex = window1.spt - window1.addressRam2 >= 0 && window1.spt - window1.addressRam2 < window1.ramViewCellAmmount ? window1.spt - window1.addressRam2 : -1
+    }
+
+    onSptChanged: {
+        rAMView1.fpIndex = window1.fpt - window1.addressRam1 >= 0 && window1.fpt - window1.addressRam1 < window1.ramViewCellAmmount ? window1.fpt - window1.addressRam1 : -1
+        rAMView1.spIndex = window1.spt - window1.addressRam1 >= 0 && window1.spt - window1.addressRam1 < window1.ramViewCellAmmount ? window1.spt - window1.addressRam1 : -1
+        rAMView2.fpIndex = window1.fpt - window1.addressRam2 >= 0 && window1.fpt - window1.addressRam2 < window1.ramViewCellAmmount ? window1.fpt - window1.addressRam2 : -1
+        rAMView2.spIndex = window1.spt - window1.addressRam2 >= 0 && window1.spt - window1.addressRam2 < window1.ramViewCellAmmount ? window1.spt - window1.addressRam2 : -1
+    }
+
     onStatusChanged: {
         if(status == "Ready")
         toggleAnimations(doAnimationsMenu.checked)
@@ -89,7 +116,6 @@ ApplicationWindow {
         changesSaved = true
         switch(mode) {
         case 1:
-            newProgram()
             textArea1.text = ""
             fileName = ""
             changesSaved = true
@@ -169,13 +195,42 @@ ApplicationWindow {
         Text{
             anchors.horizontalCenter: parent.horizontalCenter
             y: 30
-            text: "LALWE - Learn Assembly Languages With Ease\n\nVersion: 1.0\nCreated with love by Robin Hänni\n\nLALWE is licensed under the GNU gpl v3\nLALWE uses the Qt and stxxl library"
+            text: "LALWE - Learn Assembly Languages With Ease\n\nVersion: " + APP_VERSION + "\nCreated with love by Robin Hänni\n\nLALWE is licensed under the GNU gpl v3\nLALWE uses the Qt and stxxl library"
         }
         Button{
             text: "Ok"
             y: 150
             anchors.horizontalCenter: parent.horizontalCenter
             onClicked: aboutDialog.close()
+        }
+    }
+
+    Window{
+        id: resetPopup
+        title: "Resetting..."
+        width: 300
+        minimumWidth: 300
+        maximumWidth: 300
+        height: 100
+        minimumHeight: 100
+        maximumHeight: 100
+        flags: Qt.Dialog | Qt.CustomizeWindowHint | Qt.WindowTitleHint
+        modality: Qt.ApplicationModal
+        Text{
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: 30
+            text: "Resetting simulation...\n\nThis should only take long the first time."
+        }
+    }
+
+    Timer {
+        id: resetTimer
+        interval: 100
+        running: false
+        repeat: false
+        onTriggered: {
+            resetSimulation()
+            resetPopup.close()
         }
     }
 
@@ -187,7 +242,6 @@ ApplicationWindow {
                 shortcut: StandardKey.New
                 onTriggered: {
                     if(changesSaved) {
-                        newProgram()
                         textArea1.text = ""
                         fileName = ""
                         changesSaved = true
@@ -294,7 +348,10 @@ ApplicationWindow {
                 text: "&Reset"
                 shortcut: "Ctrl+R"
                 enabled: window1.status == "Ready"
-                onTriggered: resetSimulation()
+                onTriggered: {
+                    resetPopup.visible = true
+                    resetTimer.start()
+                }
             }
 
             MenuItem{
@@ -345,7 +402,7 @@ ApplicationWindow {
                 checkable: true
                 checked: true
                 shortcut: "Ctrl+F"
-                onToggled: toggleFolow(checked)
+                onToggled: toggleFollow(checked)
             }
         }
         Menu {

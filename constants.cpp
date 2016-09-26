@@ -104,6 +104,12 @@ std::string Constants::intToHex(sint i)
   return stream.str();
 }
 
+QSettings Constants::settings("config.ini",QSettings::IniFormat);
+
+const int Constants::ANIM_MIN_DELAY = Constants::settings.value("settings/animation_minimum_delay",10).toInt();
+const int Constants::ANIM_MAX_DELAY = Constants::settings.value("settings/animation_maximum_delay",1000).toInt();
+const int Constants::RAM_VIEW_CELL_AMOUNT = Constants::settings.value("settings/ram_view_cell_amount",15).toInt();
+
 int Constants::ANIM_DELAY_MILIS = Constants::ANIM_MIN_DELAY + (Constants::ANIM_MAX_DELAY - Constants::ANIM_MIN_DELAY) / 2;
 
 long long int Constants::ARRAYSIZE = (1 << 31) - 1;
