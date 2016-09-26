@@ -36,7 +36,7 @@ CONFIG  += c++11
 
 RC_ICONS = Lalwe_icon.ico
 
-VERSION = 1.1
+VERSION = 1.2
 
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 

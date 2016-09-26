@@ -9,6 +9,7 @@
 
 RAM::RAM(QObject &appMgr)
 {
+    memory = vector();
     memory.resize(arraysize);
     addressView1 = 0;
     addressView2 = arraysize - Constants::RAM_VIEW_CELL_AMOUNT;
@@ -132,6 +133,7 @@ void RAM::setRamViewAddress(int index, QString action) {
     }
     emit setGuiProperty("activeRamSlot" + QVariant::fromValue(index).toString(), QVariant::fromValue(0));
     emit setGuiProperty("activeRamSlot" + QVariant::fromValue(index).toString(), QVariant::fromValue(-1));
+    emit setGuiProperty("addressRam" + QVariant::fromValue(index).toString(), index == 1 ? addressView1 : addressView2);
     updateList();
 }
 
@@ -204,7 +206,7 @@ void RAM::toggleFollowActive(const bool &newState) {
 }
 
 void RAM::reset() {
-    memory.clear();
+    memory = vector();
     memory.resize(arraysize);
     updateList();
 }

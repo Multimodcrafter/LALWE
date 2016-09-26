@@ -13,6 +13,8 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("APP_VERSION",APP_VERSION);
+    engine.rootContext()->setContextProperty("myModel1",QVariant::fromValue(QStringList()));
+    engine.rootContext()->setContextProperty("myModel2",QVariant::fromValue(QStringList()));
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
     QObject* root = engine.rootObjects().at(0);
 
