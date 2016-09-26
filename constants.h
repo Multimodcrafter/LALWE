@@ -4,6 +4,7 @@
 #include <set>
 #include <chrono>
 #include <thread>
+#include <QSettings>
 #include "stdint.h"
 #define sint int32_t
 
@@ -111,8 +112,8 @@ public:
     static const int CMP_EQUAL = 1;
     static const int CMP_GREATER = 2;
 
-    static const int ANIM_MAX_DELAY = 1000;
-    static const int ANIM_MIN_DELAY = 10;
+    static const int ANIM_MAX_DELAY;
+    static const int ANIM_MIN_DELAY;
     static int ANIM_DELAY_MILIS;
 
     #define sleep if(doAnimations) {\
@@ -125,7 +126,7 @@ public:
         continueAnim = false;\
     }
 
-    static const int RAM_VIEW_CELL_AMOUNT = 20;
+    static const int RAM_VIEW_CELL_AMOUNT;
 
     static long long int ARRAYSIZE;
 
@@ -138,6 +139,8 @@ private:
 
     /** Stores the hexvalues' coresponding mnemonics for disassembly*/
     static std::map<sint, std::string> MNEMONICS;
+
+    static QSettings settings;
 };
 
 #endif // CONSTANTS_H

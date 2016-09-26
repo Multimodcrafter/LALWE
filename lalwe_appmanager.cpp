@@ -15,6 +15,9 @@ LALWE_AppManager::LALWE_AppManager(QQmlContext* ctxt, QObject* obj) {
     QObject::connect(assembler, SIGNAL(assemblyDone()), this, SLOT(assemblyDone()));
     QObject::connect(obj,SIGNAL(toggleFollow(bool)),ram,SLOT(toggleFollowActive(bool)));
     logger = new Logger(*obj);
+    setGuiProperty("ramViewCellAmmount",Constants::RAM_VIEW_CELL_AMOUNT);
+    setGuiProperty("addressRam1",0);
+    setGuiProperty("addressRam2",Constants::ARRAYSIZE - Constants::RAM_VIEW_CELL_AMOUNT);
 }
 
 void LALWE_AppManager::assembleSlot(const QString &code) {
