@@ -20,6 +20,10 @@ LALWE_AppManager::LALWE_AppManager(QQmlContext* ctxt, QObject* obj) {
     setGuiProperty("addressRam2",Constants::ARRAYSIZE - Constants::RAM_VIEW_CELL_AMOUNT);
 }
 
+bool LALWE_AppManager::getSimulationRunning() {
+    return programRunning && programHandle.isRunning() && animationTicker.isActive();
+}
+
 void LALWE_AppManager::assembleSlot(const QString &code) {
     if((!assemblyRunning || assembleHandle.isFinished()) && (!programRunning || programHandle.isFinished())) {
         setGuiProperty("status","Assembling...");
@@ -60,6 +64,7 @@ void LALWE_AppManager::openProgramSlot(const QString &path) {
 
 void LALWE_AppManager::playProgramSlot() {
     if((!programRunning || programHandle.isFinished())&&(!assemblyRunning || assembleHandle.isFinished())) {
+        processor.at(0)->cancelTermination();
         setGuiProperty("status","Simulation running...");
         Logger::loggerInst->info("Simulation started...");
         programRunning = true;
@@ -69,10 +74,25 @@ void LALWE_AppManager::playProgramSlot() {
         if(animationTicker.isActive()) {
             animationTicker.stop();
             setGuiProperty("status","Simulation paused");
+            emit toggleAnimPlaying(false);
         } else {
             animationTicker.start(Constants::ANIM_DELAY_MILIS);
             setGuiProperty("status","Simulation running...");
+            emit toggleAnimPlaying(true);
         }
+    }
+}
+
+void LALWE_AppManager::abortProgramSlot() {
+    if((programRunning && programHandle.isRunning()) || (assemblyRunning && assembleHandle.isRunning())) {
+        processor.at(0)->toggleAnimations(false);
+        emit stepAnimation();
+        processor.at(0)->requestTermination();
+        if(animationTicker.isActive()) {
+            processor.at(0)->toggleAnimations(true);
+            animationTicker.stop();
+        }
+        setGuiProperty("status","Ready");
     }
 }
 

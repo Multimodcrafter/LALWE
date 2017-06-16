@@ -25,7 +25,7 @@ RAM::RAM(QObject &appMgr)
 }
 
 sint RAM::getValueAt(sint addr) {
-    if(addr < arraysize) {
+    if(addr < arraysize && addr >= 0) {
         highlightCell(addr);
         if(addressInSight(addr)) {
             sleep
@@ -39,7 +39,7 @@ sint RAM::getValueAt(sint addr) {
 }
 
 void RAM::setValueAt(sint addr, sint value) {
-    if(addr < arraysize) {
+    if(addr < arraysize && addr >= 0) {
         highlightCell(addr);
         if(addressInSight(addr)) {
             sleep

@@ -50,6 +50,7 @@ ApplicationWindow {
     signal saveProgram(string code,string path, int mode)
     signal openProgram(string path)
     signal playProgram()
+    signal abortProgram()
     signal verifyProgram(string code)
     signal assembleProgram(string code)
     signal toggleAnimations(bool newState)
@@ -341,9 +342,16 @@ ApplicationWindow {
             MenuItem{
                 text: "Step &forward"
                 enabled: window1.status == "Simulation paused"
-                shortcut: "Space"
+                shortcut: "F6"
                 onTriggered: animStepForward()
             }
+            MenuItem{
+                text: "Abort"
+                enabled: window1.status == "Simulation paused" || window1.status == "Simulation running..."
+                shortcut: "F7"
+                onTriggered: abortProgram()
+            }
+
             MenuItem{
                 text: "&Reset"
                 shortcut: "Ctrl+R"
@@ -704,6 +712,7 @@ ApplicationWindow {
         placeholderText: qsTr("Dynamic input")
         Keys.onReturnPressed: {
             sendInput(text);
+            text = "";
         }
     }
 

@@ -14,6 +14,7 @@ class LALWE_AppManager : public QObject
     Q_OBJECT
 signals:
     void stepAnimation();
+    void toggleAnimPlaying(bool newstate);
 
 private:
     QQmlContext* ctxt;
@@ -34,6 +35,7 @@ public slots:
     void saveProgramSlot(const QString &code, const QString & path, const int &mode);
     void openProgramSlot(const QString &path);
     void playProgramSlot();
+    void abortProgramSlot();
     void toggleAnimationsSlot(const bool &newState);
     void toggleRamHex(const bool &newState);
     void verifySlot(const QString &code);
@@ -50,5 +52,6 @@ public slots:
 
 public:
     LALWE_AppManager(QQmlContext* ctxt, QObject* obj);
+    bool getSimulationRunning();
 };
 #endif // LALWE_APPMANAGER_H

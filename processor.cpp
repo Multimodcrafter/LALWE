@@ -11,12 +11,14 @@ Processor::Processor(QObject &appMgr)
     alu = new ALU(controller,appMgr);
     doAnimations = true;
     continueAnim = false;
+    animationsPlaying = true;
     idle = false;
     waitForInput = false;
     sigTerm = false;
     QObject::connect(this, SIGNAL(setGuiProperty(QString,QVariant)), &appMgr, SLOT(setGuiProperty(QString,QVariant)));
     QObject::connect(&appMgr, SIGNAL(stepAnimation()), this, SLOT(stepAnimation()));
     QObject::connect(this, SIGNAL(printLine(QString)), &appMgr, SLOT(printLine(QString)));
+    QObject::connect(&appMgr, SIGNAL(toggleAnimPlaying(bool)), this, SLOT(togglePlayState(bool)));
 }
 
 void Processor::runProgram() {
@@ -38,16 +40,16 @@ void Processor::runProgram() {
             case MOV:
             {
                 sint argument = controller->getRegisterVal(Constants::REG_ARG);
-                sint reg1 = 0;
-                sint reg2 = 0;
+                sint reg1 = -1;
+                sint reg2 = -1;
                 //get the two registers from the argument
                 //the source lies in the first ten bits
                 //the destination lies in the second ten bits
                 for(int i = 0; i <= 10; ++i) {
-                    if(((argument & 0b1111111111) & (1 << i)) != 0) {
+                    if(((argument & 0b1111111111) & (1 << i)) == (argument & 0b1111111111)) {
                         reg1 = (1 << i);
                     }
-                    if(((argument >> 11) & (1 << i)) != 0) {
+                    if(((argument >> 11) & (1 << i)) == (argument >> 11)) {
                         reg2 = (1 << i);
                     }
                 }
@@ -116,6 +118,7 @@ void Processor::runProgram() {
                 value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,false);
                 setEffectiveAddress(QVariant::fromValue(value).toString());
                 if(value == 0) {
+                    emit setGuiProperty("status","Ready");
                     Logger::loggerInst->error("Division by 0");
                     return;
                 }
@@ -125,6 +128,7 @@ void Processor::runProgram() {
                 value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,true);
                 setEffectiveAddress(QVariant::fromValue(value).toString());
                 if(value == 0) {
+                    emit setGuiProperty("status","Ready");
                     Logger::loggerInst->error("Division by 0");
                     return;
                 }
@@ -371,7 +375,10 @@ void Processor::runProgram() {
                 while(waitForInput && !sigTerm) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 }
-                setGuiProperty("status","Simulation running...");
+                if(animationsPlaying)
+                    setGuiProperty("status","Simulation running...");
+                else
+                    setGuiProperty("status","Simulation paused");
                 controller->setRegisterVal(Constants::REG_IN, inputValue);
                 break;
             case WOUT:
@@ -423,6 +430,10 @@ void Processor::stepAnimation() {
     if(idle) continueAnim = true;
 }
 
+void Processor::togglePlayState(bool newState) {
+    animationsPlaying = newState;
+}
+
 void Processor::sendInput(sint value) {
     inputValue = value;
     waitForInput = false;
@@ -435,4 +446,9 @@ void Processor::requestTermination() {
     waitForInput = false;
     doAnimations = false;
     inputValue = 1;
+}
+
+void Processor::cancelTermination() {
+    sigTerm = false;
+    continueAnim = false;
 }

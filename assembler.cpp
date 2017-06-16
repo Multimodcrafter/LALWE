@@ -275,11 +275,13 @@ void Assembler::verify(std::string code) {
             if(w == "function") isFunctionDef = true; //curent line is a function def
             else if(isFunctionDef) {
                 if(i == 1) { //first word after "function" is equal to the name of the subroutine
-                    if(checkIdentifier(w)) name = w;
+                    checkIdentifier(w);
+                    name = w;
                     paramcount = 0;
                 } else if(i > 1) {
                     ++paramcount;
-                    if(checkIdentifier(w)) s.param_names.insert(std::make_pair(w,paramcount)); //map param_name to position of parameter
+                    checkIdentifier(w);
+                    s.param_names.insert(std::make_pair(w,paramcount)); //map param_name to position of parameter
                 }
             } else if(w.at(0) == ':') {
                 varbel_names.insert(std::make_pair(w.substr(1),address + 2));
@@ -330,9 +332,14 @@ void Assembler::verify(std::string code) {
                 state = 0;
             } else if(words.at(0) == "function") {
                 //init everything necessary for state 1
-                state = 1;
-                curr_s = &subroutines.at(words.at(1));
-                curr_s_name = words.at(1);
+                if(words.size() > 1) {
+                    if(state == 1) Logger::loggerInst->error("Function '" + curr_s_name + "'' is missing terminator ('endfunction')");
+                    state = 1;
+                    curr_s = &subroutines.at(words.at(1));
+                    curr_s_name = words.at(1);
+                } else {
+                    Logger::loggerInst->error("Function definition is missing identifier on line ", i + 1);
+                }
             } else if(words.at(0) == "entrypoint") {
             } else {
                 if(words.at(0).at(0) == '#' || words.at(0).at(0) == ':') {
@@ -392,6 +399,7 @@ void Assembler::verify(std::string code) {
                 && Constants::ASSEMBLY_INST.find(words.at(0)) == Constants::ASSEMBLY_INST.end()
                 && Constants::OP_CODES.find(words.at(0)) != Constants::OP_CODES.end()) address += 2; //normal op code requires two memory slots (OP-Code + Argument)
     }
+    if(state == 1) Logger::loggerInst->error("Function '" + curr_s_name + "'' is missing terminator ('endfunction')");
     Logger::loggerInst->info("Code verification done! If no error messages showed up, your code(-syntax) should be fine.");
 }
 
@@ -437,8 +445,16 @@ Assembler::addressCompound Assembler::getAddress(std::string idf, int state, std
     if(std::regex_match(idf,std::regex("^-?[0-9]+")) || std::regex_match(idf,std::regex("^-?0x[a-f0-9]+"))) {
         //if identifier is a number, it serves as the effective address/value
         Logger::loggerInst->debug("Identifier is numeric, absolute");
-        sint effective_address = std::stoi(idf,0,0);
-        result.address = effective_address;
+        try {
+            sint effective_address = std::stoi(idf,0,0);
+            result.address = effective_address;
+        } catch (const std::out_of_range& e) {
+            Logger::loggerInst->debug(e.what());
+            Logger::loggerInst->error("Number is too big to fit in a 32-Bit Integer. " + idf);
+            result.address = 0;
+            return result;
+        }
+
         result.op_add = isValue ? Constants::ADR_ABSOLUTE : Constants::VAL_ABSOLUTE;
         result.valid = true;
     } else if(idf.find('[') != std::string::npos) {
@@ -505,8 +521,14 @@ Assembler::addressCompound Assembler::getAddress(std::string idf, int state, std
 
 sint Assembler::isNumeric(std::string idf) {
     if(std::regex_match(idf,std::regex("^-?[0-9]+")) || std::regex_match(idf,std::regex("^-?0x[a-f0-9]+"))) {
-        sint effective_address = std::stoi(idf,0,0);;
-        return effective_address;
+        try {
+            sint effective_address = std::stoi(idf,0,0);
+            return effective_address;
+        } catch (const std::out_of_range& e) {
+            Logger::loggerInst->debug(e.what());
+            Logger::loggerInst->error("Number is too big to fit in a 32-Bit Integer. " + idf);
+            return -1;
+        }
     }
     return -1;
 }
