@@ -16,6 +16,7 @@ Assembler::Assembler() {
 void Assembler::assemble(std::string code, RAM* mem) {
     Logger::loggerInst->info("Assembly process started...");
     std::vector<std::string> lines = splitString(code,'\n');
+    std::map<sint,sint> datablock;
     varbel_names.clear();
     subroutines.clear();
 
@@ -78,6 +79,7 @@ void Assembler::assemble(std::string code, RAM* mem) {
     int state = 0; //where in the code are we? 0 = main code, 1 = subroutine
     subroutine* curr_s = nullptr; //stores the current subroutine information
     std::string curr_s_name = "";
+    bool curr_s_ret = false;
     int globalvarcount = 0; //how many global vars have been defined so far
     // how many local vars have been defined so far (in case of state == 1)
     // start value of 2 is necessary because 0=return-address, 1=previous frame pointer and 2=previous stack pointer
@@ -94,6 +96,13 @@ void Assembler::assemble(std::string code, RAM* mem) {
                 if(state == 0) {
                     if(words.size() > 1 && checkIdentifier(words.at(1))) {
                         varbel_names.insert(std::make_pair(words.at(1),globalvarcount));
+                        if(words.size() > 2) {
+                            for(int i = 2; i < words.size(); ++i) {
+                                datablock.insert(std::make_pair(globalvarcount,isNumeric(words.at(i))));
+                                ++globalvarcount;
+                            }
+                            --globalvarcount;
+                        }
                         ++globalvarcount; //global vars are zero basedly indexed since the data pointer points to the first available ram slot
                     } else if(words.size() == 1) {
                         Logger::loggerInst->error("Missing identifier after keyword 'define' on line ", i + 1);
@@ -122,6 +131,7 @@ void Assembler::assemble(std::string code, RAM* mem) {
                 }
             } else if(words.at(0) == "endfunction") {
                 //reset everything to state 0
+                if(!curr_s_ret) Logger::loggerInst->warning("Function '" + curr_s_name + "' has no return statement! This will most likely cause dangling pointers!");
                 localvarcount = 2;
                 curr_s = nullptr;
                 curr_s_name = "";
@@ -131,6 +141,7 @@ void Assembler::assemble(std::string code, RAM* mem) {
                 state = 1;
                 curr_s = &subroutines.at(words.at(1));
                 curr_s_name = words.at(1);
+                curr_s_ret = false;
             } else if(words.at(0) == "entrypoint") {
                 //set the entrypoint address
                 mem->setValueAt(0,address + 1);
@@ -176,6 +187,7 @@ void Assembler::assemble(std::string code, RAM* mem) {
                         return;
                     }
                 } else if(words.size() == 1) {
+                    if(words.at(0) == "ret") curr_s_ret = true;
                     //if mnemonic has no arguments, store the apropriate op-code and a null argument
                     if(Constants::OP_CODES.find(words.at(0)) != Constants::OP_CODES.end()) {
                         mem->setValueAt(address + 1, Constants::OP_CODES.at(words.at(0)));
@@ -193,6 +205,7 @@ void Assembler::assemble(std::string code, RAM* mem) {
                         if(adcp.valid) {
                             mem->setValueAt(address + 1, Constants::OP_CODES.at(words.at(0)) + adcp.op_add);
                             mem->setValueAt(address + 2, adcp.address);
+                            if(words.at(0) == "ldi" && adcp.op_add == Constants::ADR_REG) Logger::loggerInst->warning("Using register-address as argument for indirect load 'LDI', which most likely won't have the expected result, on line ", i + 1);
                         } else {
                             Logger::loggerInst->info("Assembly process aborted!");
                             emit assemblyDone();
@@ -214,6 +227,23 @@ void Assembler::assemble(std::string code, RAM* mem) {
                             if(adcp1.op_add == adcp2.op_add && adcp1.address == adcp2.address) Logger::loggerInst->warning("Mov instruction without effect on line ", i + 1);
                             if(adcp1.op_add != Constants::ADR_REG || adcp2.op_add != Constants::ADR_REG) Logger::loggerInst->warning("Non-register-address argument will be treated as register-address anyways for mov instruction on line ", i+1);
                             mem->setValueAt(address + 2, adcp1.address + (adcp2.address << 11));
+                        } else {
+                            Logger::loggerInst->info("Assembly process aborted!");
+                            emit assemblyDone();
+                            return;
+                        }
+                    } else if(words.at(0) == "ld" || words.at(0) == "ldi") {
+                        addressCompound adcp = getAddress(words.at(1), state, curr_s_name);
+                        addressCompound target_reg = getAddress(words.at(2),state,curr_s_name);
+                        if(adcp.valid && target_reg.valid && target_reg.op_add == Constants::ADR_REG) {
+                            sint reg_number = 0;
+                            while(target_reg.address > 0) {
+                                ++reg_number;
+                                target_reg.address >>= 1;
+                            }
+                            mem->setValueAt(address + 1, Constants::OP_CODES.at(words.at(0)) + adcp.op_add + (reg_number << 24));
+                            mem->setValueAt(address + 2, adcp.address);
+                            if(words.at(0) == "ldi" && adcp.op_add == Constants::ADR_REG) Logger::loggerInst->warning("Using register-address as argument for indirect load 'LDI', which most likely won't have the expected result, on line ", i + 1);
                         } else {
                             Logger::loggerInst->info("Assembly process aborted!");
                             emit assemblyDone();
@@ -242,6 +272,9 @@ void Assembler::assemble(std::string code, RAM* mem) {
                 && Constants::OP_CODES.find(words.at(0)) != Constants::OP_CODES.end()) address += 2; //normal op code requires two memory slots (OP-Code + Argument)
     }
     mem->setValueAt(1,address + 1); //set the value the datapointer should be set to
+    for(std::pair<sint,sint> datavalue : datablock) {
+        mem->setValueAt(address + 1 + datavalue.first,datavalue.second);
+    }
     Logger::loggerInst->info("Assembly process done!");
     emit assemblyDone();
 }
@@ -298,6 +331,7 @@ void Assembler::verify(std::string code) {
     int state = 0; //where in the code are we? 0 = main code, 1 = subroutine
     subroutine* curr_s = nullptr; //stores the current subroutine information
     std::string curr_s_name = "";
+    bool curr_s_ret = false;
     int globalvarcount = 0; //how many global vars have been defined so far
     // how many local vars have been defined so far (in case of state == 1)
     // start value of 2 is necessary because 0=return-address, 1=previous frame pointer and 2=previous stack pointer
@@ -326,6 +360,7 @@ void Assembler::verify(std::string code) {
                 }
             } else if(words.at(0) == "endfunction") {
                 //reset everything to state 0
+                if(!curr_s_ret) Logger::loggerInst->warning("Function '" + curr_s_name + "' has no return statement! This will most likely cause dangling pointers!");
                 localvarcount = 2;
                 curr_s = nullptr;
                 curr_s_name = "";
@@ -335,6 +370,7 @@ void Assembler::verify(std::string code) {
                 if(words.size() > 1) {
                     if(state == 1) Logger::loggerInst->error("Function '" + curr_s_name + "'' is missing terminator ('endfunction')");
                     state = 1;
+                    curr_s_ret = false;
                     curr_s = &subroutines.at(words.at(1));
                     curr_s_name = words.at(1);
                 } else {
@@ -364,6 +400,7 @@ void Assembler::verify(std::string code) {
                         Logger::loggerInst->error("Missing function-identifier after mnemonic 'call' on line ", i + 1);
                     }
                 } else if(words.size() == 1) {
+                    if(words.at(0) == "ret") curr_s_ret = true;
                     //if mnemonic has no arguments, store the apropriate op-code and a null argument
                     if(Constants::OP_CODES.find(words.at(0)) == Constants::OP_CODES.end()) {
                         Logger::loggerInst->error("Unrecognized mnemonic on line ", i + 1);

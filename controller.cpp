@@ -161,7 +161,13 @@ sint Controller::calcActualValue(sint addr, sint mode, bool indirect) {
             }
             return ram->getValueAt(addr);
         case Constants::VAL_ABSOLUTE:
-            setAddressMode("Absolute value");
+            if(indirect) {
+                setAddressMode("Indirect absolute value");
+                this->setRegisterVal(Constants::REG_IND2, addr);
+                return ram->getValueAt(this->getRegisterVal(Constants::REG_IND2));
+            } else {
+                setAddressMode("Absolute value");
+            }
             return addr;
         case Constants::VAL_GLOBAL:
             if(indirect) {
