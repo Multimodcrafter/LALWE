@@ -76,14 +76,14 @@ public:
     static const std::set<std::string> ASSEMBLY_INST;
 
     /** constants used to determine if a numeric value is a variable, register or parameter*/
-    static const int ADR_ABSOLUTE = 5;
-    static const int ADR_GLOBAL = 1;
-    static const int ADR_LOCAL = 2;
-    static const int ADR_REG = 3;
-    static const int ADR_PARAMETER = 4;
-    static const int VAL_ABSOLUTE = 0;
-    static const int VAL_GLOBAL = 6;
-    static const int VAL_LOCAL = 7;
+    static const int ADR_ABSOLUTE = 6;
+    static const int ADR_GLOBAL = 2;
+    static const int ADR_LOCAL = 3;
+    static const int ADR_REG = 4;
+    static const int ADR_PARAMETER = 5;
+    static const int VAL_ABSOLUTE = 1;
+    static const int VAL_GLOBAL = 7;
+    static const int VAL_LOCAL = 8;
     static const int VAL_REG = 9;
     static const int VAL_PARAMETER = 10;
 

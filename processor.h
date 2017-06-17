@@ -25,6 +25,8 @@ public:
 
     void requestTermination();
 
+    void cancelTermination();
+
 private:
     Controller* controller;
 
@@ -33,6 +35,7 @@ private:
     bool idle;
     bool waitForInput;
     bool sigTerm;
+    bool animationsPlaying;
     sint inputValue;
 
     ALU* alu;
@@ -42,6 +45,7 @@ private:
     void setEffectiveAddress(QString addr);
 public slots:
     void stepAnimation();
+    void togglePlayState(bool newState);
 };
 
 #endif // PROCESSOR_H

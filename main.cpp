@@ -32,6 +32,9 @@ int main(int argc, char *argv[])
     QObject::connect(root ,SIGNAL(playProgram()),
                      appMngr, SLOT(playProgramSlot()));
 
+    QObject::connect(root, SIGNAL(abortProgram()),
+                     appMngr, SLOT(abortProgramSlot()));
+
     QObject::connect(root ,SIGNAL(toggleAnimations(bool)),
                      appMngr, SLOT(toggleAnimationsSlot(bool)));
 

@@ -11,12 +11,14 @@ Processor::Processor(QObject &appMgr)
     alu = new ALU(controller,appMgr);
     doAnimations = true;
     continueAnim = false;
+    animationsPlaying = true;
     idle = false;
     waitForInput = false;
     sigTerm = false;
     QObject::connect(this, SIGNAL(setGuiProperty(QString,QVariant)), &appMgr, SLOT(setGuiProperty(QString,QVariant)));
     QObject::connect(&appMgr, SIGNAL(stepAnimation()), this, SLOT(stepAnimation()));
     QObject::connect(this, SIGNAL(printLine(QString)), &appMgr, SLOT(printLine(QString)));
+    QObject::connect(&appMgr, SIGNAL(toggleAnimPlaying(bool)), this, SLOT(togglePlayState(bool)));
 }
 
 void Processor::runProgram() {
@@ -27,8 +29,12 @@ void Processor::runProgram() {
         setCycleState(0);
         sint instruction = controller->fetchInstruction(); //fetch the next instruction
         setCycleState(1);
-        sint normalized_inst = instruction & 0xfffffff0; //remove the instruction mode
-        sint instruction_mode = instruction - normalized_inst; //get the instruction mode (i.e. how to treat the address)
+        sint normalized_inst = instruction & 0x00fffff0; //remove the instruction mode and target
+        sint instruction_mode = instruction & 0x0000000f; //get the instruction mode (i.e. how to treat the address)
+        sint target = (instruction & 0xff000000) >> 24; //get the target (only releveant for certain instructions)
+        Logger::loggerInst->debug("Normalized instruction: ", normalized_inst);
+        Logger::loggerInst->debug("Instructionmode: ", instruction_mode);
+        Logger::loggerInst->debug("Target: ", target);
         setDecodedOpc(QString::fromStdString(Constants::getMnemonic(normalized_inst)).toUpper());
         sint value = 0;
         sint cmpResult = 0;
@@ -38,16 +44,16 @@ void Processor::runProgram() {
             case MOV:
             {
                 sint argument = controller->getRegisterVal(Constants::REG_ARG);
-                sint reg1 = 0;
-                sint reg2 = 0;
+                sint reg1 = -1;
+                sint reg2 = -1;
                 //get the two registers from the argument
                 //the source lies in the first ten bits
                 //the destination lies in the second ten bits
                 for(int i = 0; i <= 10; ++i) {
-                    if(((argument & 0b1111111111) & (1 << i)) != 0) {
+                    if(((argument & 0b1111111111) & (1 << i)) == (argument & 0b1111111111)) {
                         reg1 = (1 << i);
                     }
-                    if(((argument >> 11) & (1 << i)) != 0) {
+                    if(((argument >> 11) & (1 << i)) == (argument >> 11)) {
                         reg2 = (1 << i);
                     }
                 }
@@ -72,20 +78,16 @@ void Processor::runProgram() {
                 controller->returnFunction();
                 break;
             case LDI:
-                value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,false);
+                value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,true);
                 setEffectiveAddress(QVariant::fromValue(value).toString());
-                if(instruction_mode == Constants::VAL_ABSOLUTE || instruction_mode == Constants::VAL_GLOBAL ||
-                        instruction_mode == Constants::VAL_LOCAL || instruction_mode == Constants::VAL_PARAMETER ||
-                        instruction_mode == Constants::VAL_REG) controller->loadRamValDir(value);
-                else controller->loadRamValInd(value);
+                if(target == 0) controller->setRegisterVal(Constants::REG_ACC,value);
+                else controller->setRegisterVal(1 << (target - 1), value);
                 break;
             case LD:
                 value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,false);
                 setEffectiveAddress(QVariant::fromValue(value).toString());
-                if(instruction_mode == Constants::VAL_ABSOLUTE || instruction_mode == Constants::VAL_GLOBAL ||
-                        instruction_mode == Constants::VAL_LOCAL || instruction_mode == Constants::VAL_PARAMETER ||
-                        instruction_mode == Constants::VAL_REG || instruction_mode == Constants::ADR_REG) controller->setRegisterVal(Constants::REG_IN,value);
-                else controller->loadRamValDir(value);
+                if(target == 0) controller->setRegisterVal(Constants::REG_ACC,value);
+                else controller->setRegisterVal(1 << (target - 1), value);
                 break;
             case STO:
                 value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,false);
@@ -116,6 +118,7 @@ void Processor::runProgram() {
                 value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,false);
                 setEffectiveAddress(QVariant::fromValue(value).toString());
                 if(value == 0) {
+                    emit setGuiProperty("status","Ready");
                     Logger::loggerInst->error("Division by 0");
                     return;
                 }
@@ -125,6 +128,7 @@ void Processor::runProgram() {
                 value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,true);
                 setEffectiveAddress(QVariant::fromValue(value).toString());
                 if(value == 0) {
+                    emit setGuiProperty("status","Ready");
                     Logger::loggerInst->error("Division by 0");
                     return;
                 }
@@ -366,13 +370,23 @@ void Processor::runProgram() {
                 }
                 break;
             case RIN:
+                value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,false);
+                setEffectiveAddress(QVariant::fromValue(value).toString());
                 waitForInput = true;
                 setGuiProperty("status","Waiting for user input...");
                 while(waitForInput && !sigTerm) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 }
-                setGuiProperty("status","Simulation running...");
-                controller->setRegisterVal(Constants::REG_IN, inputValue);
+                if(animationsPlaying)
+                    setGuiProperty("status","Simulation running...");
+                else
+                    setGuiProperty("status","Simulation paused");
+                if(instruction_mode == 0)
+                    controller->setRegisterVal(Constants::REG_ACC, inputValue);
+                else if(instruction_mode == Constants::ADR_REG)
+                    controller->setRegisterVal(value,inputValue);
+                else
+                    controller->getRam()->setValueAt(value,inputValue);
                 break;
             case WOUT:
                 value = controller->calcActualValue(controller->getRegisterVal(Constants::REG_ARG),instruction_mode,false);
@@ -423,6 +437,10 @@ void Processor::stepAnimation() {
     if(idle) continueAnim = true;
 }
 
+void Processor::togglePlayState(bool newState) {
+    animationsPlaying = newState;
+}
+
 void Processor::sendInput(sint value) {
     inputValue = value;
     waitForInput = false;
@@ -435,4 +453,9 @@ void Processor::requestTermination() {
     waitForInput = false;
     doAnimations = false;
     inputValue = 1;
+}
+
+void Processor::cancelTermination() {
+    sigTerm = false;
+    continueAnim = false;
 }

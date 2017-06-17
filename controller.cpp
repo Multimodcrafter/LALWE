@@ -28,16 +28,16 @@ Controller::Controller(QObject &appMgr)
 }
 
 sint Controller::getRegisterVal(sint reg) {
-    for(int i = 0; i <= 10; ++i) {
-        if((reg & (1 << i)) != 0) return registers.at(i)->getValue();
+    for(int i = 0; i <= 10 && reg != 0; ++i) {
+        if((reg & (1 << i)) == reg) return registers.at(i)->getValue();
     }
     Logger::loggerInst->error("Inexistent register dereferenced!");
     return 0;
 }
 
 void Controller::setRegisterVal(sint reg, sint val) {
-    for(int i = 0; i <= 10; ++i) {
-        if((reg & (1 << i)) != 0) {
+    for(int i = 0; i <= 10 && reg != 0; ++i) {
+        if((reg & (1 << i)) == reg) {
             registers.at(i)->setValue(val);
             return;
         }
@@ -46,8 +46,8 @@ void Controller::setRegisterVal(sint reg, sint val) {
 }
 
 void Controller::decRegister(sint reg) {
-    for(int i = 0; i <= 10; ++i) {
-        if((reg & (1 << i)) != 0) {
+    for(int i = 0; i <= 10 && reg != 0; ++i) {
+        if((reg & (1 << i)) == reg) {
             sint val = registers.at(i)->getValue();
             registers.at(i)->setValue(val - 1);
             return;
@@ -57,8 +57,8 @@ void Controller::decRegister(sint reg) {
 }
 
 void Controller::incRegister(sint reg) {
-    for(int i = 0; i <= 10; ++i) {
-        if((reg & (1 << i)) != 0) {
+    for(int i = 0; i <= 10 && reg != 0; ++i) {
+        if((reg & (1 << i)) == reg) {
             sint val = registers.at(i)->getValue();
             registers.at(i)->setValue(val + 1);
             return;
@@ -68,8 +68,8 @@ void Controller::incRegister(sint reg) {
 }
 
 void Controller::negRegister(sint reg) {
-    for(int i = 0; i <= 10; ++i) {
-        if((reg & (1 << i)) != 0) {
+    for(int i = 0; i <= 10 && reg != 0; ++i) {
+        if((reg & (1 << i)) == reg) {
             sint val = registers.at(i)->getValue();
             registers.at(i)->setValue(-val);
             return;
@@ -79,8 +79,8 @@ void Controller::negRegister(sint reg) {
 }
 
 void Controller::notRegister(sint reg) {
-    for(int i = 0; i <= 10; ++i) {
-        if((reg & (1 << i)) != 0) {
+    for(int i = 0; i <= 10 && reg != 0; ++i) {
+        if((reg & (1 << i)) == reg) {
             sint val = registers.at(i)->getValue();
             registers.at(i)->setValue(~val);
             return;
@@ -161,7 +161,13 @@ sint Controller::calcActualValue(sint addr, sint mode, bool indirect) {
             }
             return ram->getValueAt(addr);
         case Constants::VAL_ABSOLUTE:
-            setAddressMode("Absolute value");
+            if(indirect) {
+                setAddressMode("Indirect absolute value");
+                this->setRegisterVal(Constants::REG_IND2, addr);
+                return ram->getValueAt(this->getRegisterVal(Constants::REG_IND2));
+            } else {
+                setAddressMode("Absolute value");
+            }
             return addr;
         case Constants::VAL_GLOBAL:
             if(indirect) {
