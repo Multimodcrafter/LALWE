@@ -5,7 +5,7 @@ This is the official repository for the source-code of LALWE - Learn Assembly La
 If you want to get LALWE installed on your computer, you can download the installer from the latest [release!](https://github.com/Multimodcrafter/LALWE/releases/latest) Just open the file and follow the instructions. It's as simple as that ;-)
 (NOTE: Your antivirus might not like my installer-file since it has not been signed by a trustworthy key. However, I promise that the installer is totally virus, malware and adware free. If you don't believe me, you can of course download the source and compile it yourself!)
 
-##Installation for developers
+## Installation for developers
 If you are a developer and want to contribute to the project or just want to compile the software on your own, follow these steps:
 
 1. Fork this repository.
